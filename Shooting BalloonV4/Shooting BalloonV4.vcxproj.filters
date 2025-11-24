@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <MASM Include="main.asm" />
+    <MASM Include="utils.asm" />
+    <MASM Include="render.asm" />
+    <MASM Include="states.asm" />
+    <MASM Include="physics.asm" />
+    <MASM Include="levels.asm" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bindings.inc" />
+    <None Include="common.inc" />
+    <None Include="build.bat" />
+    <None Include="asm_libs.props" />
+    <None Include="Shooting BalloonV4_FIXED.vcxproj" />
+  </ItemGroup>
+</Project>
