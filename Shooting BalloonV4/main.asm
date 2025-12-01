@@ -1,3 +1,4 @@
+;Myr Comment Hello! This is the main assembly file for the "IT: Welcome to Derry 2025" balloon shooting game.
 ; ============================================================================
 ; main.asm - Entry Point & State Machine Loop
 ; IT: Welcome to Derry 2025 - Balloon Shooting Game
