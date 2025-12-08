@@ -15,14 +15,19 @@ EXTERN player:PLAYER_STRUCT
 EXTERN currentState:DWORD
 EXTERN nextState:DWORD
 EXTERN gameRunning:BYTE
+EXTERN currentLevel:DWORD
 
 ; From states.asm
 EXTERN menuSelection:DWORD
+
+; From levels.asm
+EXTERN selectedLevel:DWORD
 
 ; ============================= PUBLIC EXPORTS ===============================
 PUBLIC HandleInput
 PUBLIC IsKeyPressed
 PUBLIC IsKeyDown
+PUBLIC ClearKeyStates
 
 ; ============================= DATA SECTION =================================
 .data
@@ -31,6 +36,25 @@ PUBLIC IsKeyDown
     
 ; ============================= CODE SECTION =================================
 .code
+
+; ----------------------------------------------------------------------------
+; Procedure: ClearKeyStates
+; Description: Clear all key states (called on state transitions)
+; ----------------------------------------------------------------------------
+ClearKeyStates PROC
+    push edi
+    push ecx
+    
+    ; Clear keyStates array
+    mov edi, OFFSET keyStates
+    mov ecx, 256
+    xor eax, eax
+    rep stosb
+    
+    pop ecx
+    pop edi
+    ret
+ClearKeyStates ENDP
 
 ; ----------------------------------------------------------------------------
 ; Procedure: IsKeyPressed
@@ -126,8 +150,9 @@ CheckEnter:
     jmp InputDone
     
 StartGame:
-    mov nextState, STATE_GAME
-    call InitGame
+    ; Transition to level select instead of directly to game
+    mov nextState, STATE_LEVEL_SELECT
+    mov selectedLevel, 0        ; Reset selection to first level
     jmp InputDone
     
 CheckEscape:
@@ -141,6 +166,65 @@ CheckEscape:
 InputDone:
     ret
 HandleMenuInput ENDP
+
+; ----------------------------------------------------------------------------
+; Procedure: HandleLevelSelectInput
+; Description: Handle input for level selection state
+; ----------------------------------------------------------------------------
+HandleLevelSelectInput PROC
+    ; Check W key (up)
+    invoke IsKeyPressed, VK_W
+    test eax, eax
+    jz CheckDown2
+    
+    ; Move selection up
+    cmp selectedLevel, 0
+    je CheckDown2
+    dec selectedLevel
+    
+CheckDown2:
+    ; Check S key (down)
+    invoke IsKeyPressed, VK_S
+    test eax, eax
+    jz CheckEnter2
+    
+    ; Move selection down (max 5 for 6 levels: 0-5)
+    cmp selectedLevel, 5
+    jge CheckEnter2
+    inc selectedLevel
+    
+CheckEnter2:
+    ; Check ENTER key to start selected level
+    invoke IsKeyPressed, VK_RETURN
+    test eax, eax
+    jz CheckEscape2
+    
+    ; Check if selected level is unlocked
+    mov eax, selectedLevel
+    inc eax                     ; Convert to 1-based level number
+    invoke IsLevelUnlocked, eax
+    test eax, eax
+    jz CheckEscape2             ; If locked, ignore enter
+    
+    ; Start the selected level
+    mov eax, selectedLevel
+    inc eax
+    mov currentLevel, eax       ; Set current level
+    call InitGame               ; Initialize game for this level
+    mov nextState, STATE_GAME
+    jmp InputDone2
+    
+CheckEscape2:
+    ; Check ESC key to go back to menu
+    invoke IsKeyPressed, VK_ESCAPE
+    test eax, eax
+    jz InputDone2
+    
+    mov nextState, STATE_MENU
+    
+InputDone2:
+    ret
+HandleLevelSelectInput ENDP
 
 ; ----------------------------------------------------------------------------
 ; Procedure: HandleGameInput
@@ -267,6 +351,9 @@ HandleInput PROC
     cmp eax, STATE_MENU
     je DoMenuInput
     
+    cmp eax, STATE_LEVEL_SELECT
+    je DoLevelSelectInput
+    
     cmp eax, STATE_GAME
     je DoGameInput
     
@@ -277,6 +364,10 @@ HandleInput PROC
     
 DoMenuInput:
     call HandleMenuInput
+    jmp InputDone4
+    
+DoLevelSelectInput:
+    call HandleLevelSelectInput
     jmp InputDone4
     
 DoGameInput:

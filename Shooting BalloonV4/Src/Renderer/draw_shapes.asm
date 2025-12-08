@@ -155,7 +155,7 @@ RenderFooter PROC
     shr ebx, 1
     mov centerX, ebx
     
-    invoke WriteString, centerX, 24, ADDR footerGame, COLOR_FOOTER
+    invoke WriteString, centerX, 33, ADDR footerGame, COLOR_FOOTER
     
     ret
 RenderFooter ENDP

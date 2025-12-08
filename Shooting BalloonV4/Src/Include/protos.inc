@@ -19,6 +19,7 @@ RenderGame PROTO
 ; ============================= STATES (states.asm) ==========================
 RenderSplash PROTO
 RenderMenu PROTO
+RenderLevelSelect PROTO
 RenderGameOver PROTO
 
 ; ============================= GAME LOGIC (player.asm) ======================
@@ -44,11 +45,16 @@ UpdateGame PROTO
 HandleInput PROTO
 IsKeyPressed PROTO :DWORD
 IsKeyDown PROTO :DWORD
+ClearKeyStates PROTO
 
 ; ============================= LEVELS (levels.asm) ==========================
 InitLevels PROTO
 GetLevelData PROTO :DWORD
 GetLevelName PROTO :DWORD
+IsLevelUnlocked PROTO :DWORD
+UnlockLevel PROTO :DWORD
+UpdateBestScore PROTO :DWORD, :DWORD
+GetBestScore PROTO :DWORD
 
 ; ============================= UTILS (utils.asm) ============================
 InitRandom PROTO

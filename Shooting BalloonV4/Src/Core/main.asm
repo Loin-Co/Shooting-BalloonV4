@@ -125,6 +125,9 @@ StateTransition PROC
     ; Clear screen buffer before transition
     call ClearScreen
     
+    ; Clear key states to prevent input carry-over
+    call ClearKeyStates
+    
     ; Update state
     mov eax, nextState
     mov currentState, eax
@@ -174,6 +177,9 @@ AfterDelta:
     cmp eax, STATE_MENU
     je HandleMenu
     
+    cmp eax, STATE_LEVEL_SELECT
+    je HandleLevelSelect
+    
     cmp eax, STATE_GAME
     je HandleGame
     
@@ -194,6 +200,11 @@ HandleSplash:
 HandleMenu:
     call HandleInput
     call RenderMenu
+    jmp EndStateCheck
+    
+HandleLevelSelect:
+    call HandleInput
+    call RenderLevelSelect
     jmp EndStateCheck
     
 HandleGame:
@@ -229,8 +240,9 @@ StateMachine ENDP
 ; ----------------------------------------------------------------------------
 ; Procedure: main
 ; Description: Program entry point
+; Note: Uses C calling convention to match linker's /ENTRY:main directive
 ; ============================================================================
-main PROC
+main PROC C
     ; Initialize console
     call InitConsole
     

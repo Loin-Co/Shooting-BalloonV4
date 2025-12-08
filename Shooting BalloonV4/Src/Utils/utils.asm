@@ -133,11 +133,11 @@ Max ENDP
 ; ----------------------------------------------------------------------------
 ; Procedure: Clamp
 ; Description: Clamp value between min and max
-; Parameters: value, minVal, maxVal
+; Parameters: val, minVal, maxVal
 ; Returns: EAX = clamped value
 ; ----------------------------------------------------------------------------
-Clamp PROC value:DWORD, minVal:DWORD, maxVal:DWORD
-    mov eax, value
+Clamp PROC val:DWORD, minVal:DWORD, maxVal:DWORD
+    mov eax, val
     mov edx, minVal
     mov ecx, maxVal
     
@@ -177,15 +177,15 @@ StrLen ENDP
 ; ----------------------------------------------------------------------------
 ; Procedure: IntToStr
 ; Description: Convert integer to string
-; Parameters: value, buffer pointer
+; Parameters: val, buffer pointer
 ; Returns: Buffer filled with string
 ; ----------------------------------------------------------------------------
-IntToStr PROC value:DWORD, buffer:DWORD
+IntToStr PROC val:DWORD, buffer:DWORD
     push ebx
     push esi
     push edi
     
-    mov eax, value
+    mov eax, val
     mov edi, buffer
     mov esi, edi
     mov ebx, 10
