@@ -89,8 +89,8 @@ IsKeyDown ENDP
 ; Description: Handle input for menu state
 ; ----------------------------------------------------------------------------
 HandleMenuInput PROC
-    ; Check UP key
-    invoke IsKeyPressed, VK_UP
+    ; Check W key (up)
+    invoke IsKeyPressed, VK_W
     test eax, eax
     jz CheckDown
     
@@ -100,8 +100,8 @@ HandleMenuInput PROC
     dec menuSelection
     
 CheckDown:
-    ; Check DOWN key
-    invoke IsKeyPressed, VK_DOWN
+    ; Check S key (down)
+    invoke IsKeyPressed, VK_S
     test eax, eax
     jz CheckEnter
     
@@ -153,32 +153,32 @@ HandleGameInput PROC
     mov deltaX, 0
     mov deltaY, 0
     
-    ; Check LEFT arrow
-    invoke IsKeyDown, VK_LEFT
+    ; Check A key (left)
+    invoke IsKeyDown, VK_A
     test eax, eax
     jz CheckRight
     
     dec deltaX
     
 CheckRight:
-    ; Check RIGHT arrow
-    invoke IsKeyDown, VK_RIGHT
+    ; Check D key (right)
+    invoke IsKeyDown, VK_D
     test eax, eax
     jz CheckUp
     
     inc deltaX
     
 CheckUp:
-    ; Check UP arrow
-    invoke IsKeyDown, VK_UP
+    ; Check W key (up/forward)
+    invoke IsKeyDown, VK_W
     test eax, eax
     jz CheckDown2
     
     dec deltaY
     
 CheckDown2:
-    ; Check DOWN arrow
-    invoke IsKeyDown, VK_DOWN
+    ; Check S key (down/backward)
+    invoke IsKeyDown, VK_S
     test eax, eax
     jz ApplyMovement
     

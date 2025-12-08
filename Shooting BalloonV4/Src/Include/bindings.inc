@@ -61,6 +61,10 @@ VK_SHIFT                equ 10h
 VK_P                    equ 50h
 VK_R                    equ 52h
 VK_Q                    equ 51h
+VK_W                    equ 57h
+VK_A                    equ 41h
+VK_S                    equ 53h
+VK_D                    equ 44h
 
 ; ============================= STRUCTURES ===================================
 
