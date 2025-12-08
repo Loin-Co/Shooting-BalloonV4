@@ -7,6 +7,16 @@
     <MASM Include="states.asm" />
     <MASM Include="physics.asm" />
     <MASM Include="levels.asm" />
+    <MASM Include="Src\Core\main.asm" />
+    <MASM Include="Src\Core\global_data.asm" />
+    <MASM Include="Src\Renderer\render_core.asm" />
+    <MASM Include="Src\Renderer\draw_shapes.asm" />
+    <MASM Include="Src\GameLogic\player.asm" />
+    <MASM Include="Src\GameLogic\enemies.asm" />
+    <MASM Include="Src\GameLogic\collision.asm" />
+    <MASM Include="Src\Input\input_mgr.asm" />
+    <MASM Include="Src\States\states.asm" />
+    <MASM Include="Src\GameLogic\game_orchestrator.asm" />
   </ItemGroup>
   <ItemGroup>
     <None Include="bindings.inc" />
@@ -14,5 +24,19 @@
     <None Include="build.bat" />
     <None Include="asm_libs.props" />
     <None Include="Shooting BalloonV4_FIXED.vcxproj" />
+    <None Include="DOUBLE_BUFFERING_IMPLEMENTATION.md" />
+    <None Include="Src\Include\protos.inc" />
+    <None Include="REORGANIZATION_GUIDE.md" />
+    <None Include="IT_WelcomeToDerry_2025.vcxproj" />
+    <None Include="IT_WelcomeToDerry_2025.vcxproj.filters" />
+    <None Include="MODULAR_BUILD_GUIDE.md" />
+    <None Include="migrate_to_modular.ps1" />
+    <None Include="DIRECTORY_STRUCTURE.md" />
+    <None Include="IMPLEMENTATION_COMPLETE.md" />
+    <None Include="START_HERE.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="RENDERING_API_REFERENCE.txt" />
+    <Text Include="ARCHITECTURE_DIAGRAM.txt" />
   </ItemGroup>
 </Project>

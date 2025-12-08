@@ -1,0 +1,208 @@
+; ============================================================================
+; QUICK REFERENCE: Double Buffer Rendering API
+; This is a documentation file - not meant to be compiled
+; ============================================================================
+
+; ============================= INITIALIZATION ===============================
+
+; Call once during program startup (already integrated in main.asm):
+call InitRenderer    ; Hides cursor and initializes buffer
+
+; ============================= FRAME RENDERING LOOP =========================
+
+; Standard game loop pattern:
+
+GameFrame:
+    call ClearBuffer              ; Clear back buffer (fill with spaces)
+    
+    ; Draw all your game elements using DrawPixel:
+    invoke DrawPixel, x, y, char, color
+    invoke DrawPixel, balloonX, balloonY, 'O', COLOR_BALLOON_RED
+    invoke DrawPixel, playerX, playerY, '@', COLOR_PLAYER
+    
+    ; Or use helper functions:
+    invoke WriteString, x, y, ADDR messageStr, COLOR_WHITE
+    invoke WriteChar, x, y, charValue, colorValue
+    
+    call PresentFrame             ; Flip buffer to screen (instant!)
+    
+    invoke Sleep, 16              ; ~60 FPS frame limiting
+    jmp GameFrame
+
+; ============================= CORE FUNCTIONS ===============================
+
+; InitRenderer - Call once at startup
+; - Hides cursor
+; - Initializes buffer
+; - No parameters
+
+; ClearBuffer - Call at start of each frame
+; - Clears back buffer to spaces + black
+; - No parameters
+; - Very fast (optimized loop)
+
+; DrawPixel - Main drawing function
+; Parameters:
+;   x (DWORD)     - X coordinate (0-79)
+;   y (DWORD)     - Y coordinate (0-24)
+;   char (DWORD)  - ASCII character to draw
+;   color (DWORD) - Color attribute (see below)
+; Usage:
+;   invoke DrawPixel, 40, 12, 'X', COLOR_LIGHT_RED
+
+; PresentFrame - Flip buffer to screen
+; - Atomically writes entire buffer
+; - No parameters
+; - Call ONCE per frame at the end
+
+; WriteString - Draw text string
+; Parameters:
+;   x (DWORD)      - X coordinate
+;   y (DWORD)      - Y coordinate
+;   strPtr (DWORD) - Pointer to null-terminated string
+;   color (DWORD)  - Color attribute
+; Usage:
+;   invoke WriteString, 10, 5, ADDR msgHello, COLOR_WHITE
+
+; ============================= COLOR ATTRIBUTES ============================
+
+; Format: (Background << 4) | Foreground
+
+; Predefined colors (from bindings.inc):
+COLOR_BLACK           = 0
+COLOR_BLUE            = 1
+COLOR_GREEN           = 2
+COLOR_CYAN            = 3
+COLOR_RED             = 4
+COLOR_MAGENTA         = 5
+COLOR_YELLOW          = 6
+COLOR_WHITE           = 7
+COLOR_GRAY            = 8
+COLOR_LIGHT_BLUE      = 9
+COLOR_LIGHT_GREEN     = 10
+COLOR_LIGHT_CYAN      = 11
+COLOR_LIGHT_RED       = 12
+COLOR_LIGHT_MAGENTA   = 13
+COLOR_LIGHT_YELLOW    = 14
+COLOR_BRIGHT_WHITE    = 15
+
+; Common combinations (from common.inc):
+COLOR_PLAYER          = 0Bh   ; Light Cyan on Black
+COLOR_BALLOON_RED     = 0Ch   ; Light Red on Black
+COLOR_BALLOON_YELLOW  = 0Eh   ; Light Yellow on Black
+COLOR_ARROW           = 0Fh   ; Bright White on Black
+COLOR_FOOTER          = 70h   ; Black on Light Gray (inverted)
+
+; Custom color examples:
+; White text on Blue background:
+myColor = (COLOR_BLUE shl 4) + COLOR_WHITE  ; = 17h
+
+; Yellow text on Red background:
+myColor = (COLOR_RED shl 4) + COLOR_YELLOW  ; = 46h
+
+; ============================= CHARACTER CODES =============================
+
+; ASCII Standard:
+CHAR_SPACE    = ' '   ; 32
+CHAR_PLAYER   = '@'   ; 64
+CHAR_BALLOON  = 'O'   ; 79
+CHAR_ARROW    = '^'   ; 94
+CHAR_STONE    = '*'   ; 42
+
+; Extended ASCII (for borders/UI):
+CHAR_WALL     = 219   ; Full block: ?
+CHAR_FOG      = 177   ; Light shade: ?
+CHAR_BORDER   = 186   ; Double vertical: ?
+CHAR_CORNER   = 201   ; Top-left corner: ?
+
+; ============================= EXAMPLE USAGE ===============================
+
+; Example 1: Draw a red balloon
+invoke DrawPixel, balloonX, balloonY, CHAR_BALLOON, COLOR_BALLOON_RED
+
+; Example 2: Draw player
+invoke DrawPixel, player.x, player.y, CHAR_PLAYER, COLOR_PLAYER
+
+; Example 3: Draw score text
+invoke IntToStr, player.score, ADDR tempBuf
+invoke WriteString, 50, 0, ADDR scoreLabel, COLOR_WHITE
+invoke WriteString, 57, 0, ADDR tempBuf, COLOR_LIGHT_GREEN
+
+; Example 4: Draw a wall line
+mov cx, 0
+WallLoop:
+    movzx eax, cx
+    invoke DrawPixel, 0, eax, CHAR_WALL, COLOR_WALL_COLOR
+    inc cx
+    cmp cx, GAME_HEIGHT
+    jl WallLoop
+
+; Example 5: Complete frame
+CompleteFrame:
+    call ClearBuffer
+    
+    ; Draw background elements
+    call DrawWalls
+    call DrawFog
+    
+    ; Draw game objects (back to front)
+    call RenderBalloons
+    call RenderProjectiles
+    call RenderPlayer
+    
+    ; Draw UI overlay
+    call RenderHUD
+    call RenderFooter
+    
+    ; Present!
+    call PresentFrame
+    ret
+
+; ============================= PERFORMANCE TIPS ============================
+
+; DO:
+; - Call ClearBuffer once per frame
+; - Draw all elements to buffer first
+; - Call PresentFrame once at the end
+; - Use DrawPixel for individual characters
+; - Hide cursor with InitRenderer
+
+; DON'T:
+; - Call PresentFrame multiple times per frame
+; - Mix old console functions (SetConsoleCursorPosition, WriteConsoleA)
+; - Clear buffer multiple times per frame
+; - Draw outside bounds (0-79, 0-24)
+
+; ============================= TROUBLESHOOTING =============================
+
+; Issue: Nothing appears on screen
+; Solution: Make sure you call PresentFrame after drawing
+
+; Issue: Screen flickers
+; Solution: Only call PresentFrame ONCE per frame at the end
+
+; Issue: Cursor visible
+; Solution: Ensure InitRenderer was called during startup
+
+; Issue: Characters don't appear at correct position
+; Solution: Check X (0-79) and Y (0-24) bounds
+
+; Issue: Wrong colors
+; Solution: Verify color attribute format: (bg << 4) | fg
+
+; ============================= BUFFER MEMORY LAYOUT =========================
+
+; consoleBuffer structure:
+; - Array of CHAR_INFO (4 bytes each)
+; - Total size: 80 × 25 × 4 = 8000 bytes
+; - Layout per cell:
+;   [Offset+0, +1] = Character (WORD, ASCII in low byte)
+;   [Offset+2, +3] = Attributes (WORD, color)
+
+; Calculate offset manually (if needed):
+; offset = ((y * SCREEN_WIDTH) + x) * 4
+
+; Example: Position (40, 12)
+; offset = ((12 * 80) + 40) * 4 = 4000 bytes
+
+; ============================================================================

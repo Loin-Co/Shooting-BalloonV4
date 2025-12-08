@@ -30,21 +30,27 @@ PUBLIC ClearScreen
 PUBLIC WriteString
 PUBLIC WriteChar
 PUBLIC RenderGame
+PUBLIC InitRenderer
 
 ; Internal prototypes
-ClearBuffers PROTO
-SetBufferChar PROTO :DWORD, :DWORD, :DWORD, :DWORD
+ClearBuffer PROTO
+DrawPixel PROTO :DWORD, :DWORD, :DWORD, :DWORD
+PresentFrame PROTO
 RenderPlayer PROTO
 RenderBalloons PROTO
 RenderProjectiles PROTO
-FlushBuffer PROTO
 RenderHUD PROTO
 RenderFooter PROTO
 
 ; ============================= DATA SECTION =================================
 .data
-    screenBuffer    db SCREEN_WIDTH * SCREEN_HEIGHT dup(CHAR_EMPTY)
-    colorBuffer     db SCREEN_WIDTH * SCREEN_HEIGHT dup(COLOR_BLACK)
+    ; Double Buffer - CHAR_INFO array (4 bytes per cell: 2 bytes char + 2 bytes attr)
+    consoleBuffer   CHAR_INFO BUFFER_SIZE dup(<0, 0>)
+    
+    ; WriteConsoleOutput parameters
+    bufferSize      COORD <SCREEN_WIDTH, SCREEN_HEIGHT>
+    bufferCoord     COORD <0, 0>
+    writeRegion     SMALL_RECT <0, 0, SCREEN_WIDTH-1, SCREEN_HEIGHT-1>
     
     ; Footer strings
     footerGame      db "[ARROWS]:Move [SPACE]:Shoot [SHIFT]:Swap [P]:Pause", 0
@@ -62,18 +68,11 @@ RenderFooter PROTO
 
 ; ----------------------------------------------------------------------------
 ; Procedure: ClearScreen
-; Description: Clear the console screen buffer
+; Description: Clear the console screen buffer (legacy support)
 ; ----------------------------------------------------------------------------
 ClearScreen PROC
-    LOCAL coord:DWORD
-    LOCAL charsWritten:DWORD
-    
-    ; Create COORD at (0,0)
-    mov coord, 0    ; X=0, Y=0
-    
-    invoke FillConsoleOutputAttribute, hStdOut, COLOR_BLACK, SCREEN_WIDTH * SCREEN_HEIGHT, coord, ADDR charsWritten
-    invoke FillConsoleOutputCharacterA, hStdOut, CHAR_EMPTY, SCREEN_WIDTH * SCREEN_HEIGHT, coord, ADDR charsWritten
-    
+    call ClearBuffer
+    call PresentFrame
     ret
 ClearScreen ENDP
 
@@ -99,168 +98,178 @@ SetCursorPos ENDP
 
 ; ----------------------------------------------------------------------------
 ; Procedure: WriteChar
-; Description: Write character at position with color
+; Description: Write character at position with color (now using DrawPixel)
 ; Parameters: x, y, char, color
 ; ----------------------------------------------------------------------------
 WriteChar PROC x:DWORD, y:DWORD, chr:DWORD, color:DWORD
-    LOCAL coord:DWORD
-    LOCAL charsWritten:DWORD
-    LOCAL buffer:BYTE
-    
-    ; Pack coordinates
-    movzx eax, WORD PTR y
-    shl eax, 16
-    movzx ebx, WORD PTR x
-    or eax, ebx
-    mov coord, eax
-    
-    mov al, BYTE PTR chr
-    mov buffer, al
-    
-    ; Set position
-    invoke SetConsoleCursorPosition, hStdOut, coord
-    
-    ; Set color
-    movzx eax, BYTE PTR color
-    invoke SetConsoleTextAttribute, hStdOut, eax
-    
-    ; Write character
-    invoke WriteConsoleA, hStdOut, ADDR buffer, 1, ADDR charsWritten, 0
-    
+    invoke DrawPixel, x, y, chr, color
     ret
 WriteChar ENDP
 
 ; ----------------------------------------------------------------------------
 ; Procedure: WriteString
-; Description: Write string at position with color
-; Parameters: x, y, string ptr, color on stack
+; Description: Write string at position with color using DrawPixel
+; Parameters: x, y, string ptr, color
 ; ----------------------------------------------------------------------------
 WriteString PROC x:DWORD, y:DWORD, strPtr:DWORD, color:DWORD
-    LOCAL coord:DWORD
-    LOCAL strLen:DWORD
+    LOCAL currentX:DWORD
+    LOCAL strOffset:DWORD
     
-    ; Pack coordinates
-    movzx eax, WORD PTR y
-    shl eax, 16
-    movzx ebx, WORD PTR x
-    or eax, ebx
-    mov coord, eax
+    mov eax, x
+    mov currentX, eax
+    mov strOffset, 0
     
-    ; Set position
-    invoke SetConsoleCursorPosition, hStdOut, coord
+WriteLoop:
+    mov ebx, strPtr
+    add ebx, strOffset
+    movzx eax, BYTE PTR [ebx]
     
-    ; Set color
-    movzx eax, BYTE PTR color
-    invoke SetConsoleTextAttribute, hStdOut, eax
+    ; Check for null terminator
+    test al, al
+    jz WriteDone
     
-    ; Get string length
-    invoke StrLen, strPtr
-    mov strLen, eax
+    ; Draw character
+    invoke DrawPixel, currentX, y, eax, color
     
-    ; Write string
-    invoke WriteConsoleA, hStdOut, strPtr, strLen, ADDR bytesWritten, 0
+    inc currentX
+    inc strOffset
+    jmp WriteLoop
     
+WriteDone:
     ret
 WriteString ENDP
 
 ; ----------------------------------------------------------------------------
-; Procedure: ClearBuffers
-; Description: Clear screen and color buffers
+; Procedure: InitRenderer
+; Description: Initialize renderer and hide cursor
 ; ----------------------------------------------------------------------------
-ClearBuffers PROC
-    push edi
+InitRenderer PROC
+    LOCAL cursorInfo:CONSOLE_CURSOR_INFO
     
-    ; Clear screen buffer
-    mov edi, OFFSET screenBuffer
-    mov ecx, SCREEN_WIDTH * SCREEN_HEIGHT
-    mov al, CHAR_EMPTY
-    rep stosb
+    ; Hide cursor to prevent flicker
+    mov cursorInfo.dwSize, 1
+    mov cursorInfo.bVisible, FALSE
+    invoke SetConsoleCursorInfo, hStdOut, ADDR cursorInfo
     
-    ; Clear color buffer
-    mov edi, OFFSET colorBuffer
-    mov ecx, SCREEN_WIDTH * SCREEN_HEIGHT
-    mov al, COLOR_BLACK
-    rep stosb
+    ; Clear buffer
+    call ClearBuffer
+    call PresentFrame
     
-    pop edi
     ret
-ClearBuffers ENDP
+InitRenderer ENDP
 
 ; ----------------------------------------------------------------------------
-; Procedure: SetBufferChar
-; Description: Set character in buffer at position
+; Procedure: ClearBuffer
+; Description: Clear the console buffer (fill with spaces and black background)
+; ----------------------------------------------------------------------------
+ClearBuffer PROC
+    push edi
+    push ecx
+    
+    ; Clear entire consoleBuffer
+    mov edi, OFFSET consoleBuffer
+    mov ecx, BUFFER_SIZE
+    
+ClearLoop:
+    mov WORD PTR [edi], ' '           ; UnicodeChar = space (ASCII in low byte)
+    mov WORD PTR [edi+2], 0           ; Attributes = black on black
+    add edi, 4                        ; CHAR_INFO is 4 bytes
+    loop ClearLoop
+    
+    pop ecx
+    pop edi
+    ret
+ClearBuffer ENDP
+
+; ----------------------------------------------------------------------------
+; Procedure: DrawPixel
+; Description: Draw a character at (x, y) with color to the buffer
 ; Parameters: x, y, char, color
 ; ----------------------------------------------------------------------------
-SetBufferChar PROC x:DWORD, y:DWORD, chr:DWORD, color:DWORD
+DrawPixel PROC x:DWORD, y:DWORD, chr:DWORD, color:DWORD
     push ebx
     
+    ; Bounds check
     mov eax, y
-    cmp eax, GAME_HEIGHT
+    cmp eax, SCREEN_HEIGHT
     jge OutOfBounds
     
     mov ebx, x
     cmp ebx, SCREEN_WIDTH
     jge OutOfBounds
     
-    ; Calculate offset: y * SCREEN_WIDTH + x
+    ; Calculate offset: ((y * SCREEN_WIDTH) + x) * 4
     imul eax, SCREEN_WIDTH
     add eax, ebx
+    shl eax, 2                        ; multiply by 4 (sizeof CHAR_INFO)
     
-    ; Set character
-    mov bl, BYTE PTR chr
-    mov screenBuffer[eax], bl
+    ; Write to buffer
+    mov ebx, eax
+    mov ax, WORD PTR chr
+    mov WORD PTR consoleBuffer[ebx], ax     ; UnicodeChar
     
-    ; Set color
-    mov bl, BYTE PTR color
-    mov colorBuffer[eax], bl
+    mov ax, WORD PTR color
+    mov WORD PTR consoleBuffer[ebx+2], ax   ; Attributes
     
 OutOfBounds:
     pop ebx
     ret
-SetBufferChar ENDP
+DrawPixel ENDP
 
 ; ----------------------------------------------------------------------------
-; Procedure: FlushBuffer
-; Description: Render buffer to console
+; Procedure: PresentFrame
+; Description: Flip the buffer to screen using WriteConsoleOutput
 ; ----------------------------------------------------------------------------
-FlushBuffer PROC
-    LOCAL x:DWORD
-    LOCAL y:DWORD
-    LOCAL bufOffset:DWORD
+PresentFrame PROC
+    LOCAL tempRegion:SMALL_RECT
+    LOCAL tempCoord:COORD
+    LOCAL tempSize:COORD
     
-    mov y, 0
-YLoop:
-    mov eax, y
-    cmp eax, GAME_HEIGHT
-    jge YDone
+    ; Copy writeRegion to local variable (API modifies it)
+    mov ax, WORD PTR writeRegion.Left
+    mov WORD PTR tempRegion.Left, ax
+    mov ax, WORD PTR writeRegion.Top
+    mov WORD PTR tempRegion.Top, ax
+    mov ax, WORD PTR writeRegion.Right
+    mov WORD PTR tempRegion.Right, ax
+    mov ax, WORD PTR writeRegion.Bottom
+    mov WORD PTR tempRegion.Bottom, ax
     
-    mov x, 0
-XLoop:
-    mov eax, x
-    cmp eax, SCREEN_WIDTH
-    jge XDone
+    ; Copy bufferCoord
+    mov ax, WORD PTR bufferCoord.X
+    mov WORD PTR tempCoord.X, ax
+    mov ax, WORD PTR bufferCoord.Y
+    mov WORD PTR tempCoord.Y, ax
     
-    ; Calculate offset
-    mov eax, y
-    imul eax, SCREEN_WIDTH
-    add eax, x
-    mov bufOffset, eax
+    ; Copy bufferSize
+    mov ax, WORD PTR bufferSize.X
+    mov WORD PTR tempSize.X, ax
+    mov ax, WORD PTR bufferSize.Y
+    mov WORD PTR tempSize.Y, ax
     
-    ; Write character
-    movzx ecx, colorBuffer[eax]
-    movzx edx, screenBuffer[eax]
-    invoke WriteChar, x, y, edx, ecx
+    ; Call WriteConsoleOutputA
+    lea eax, tempRegion
+    push eax
     
-    inc x
-    jmp XLoop
+    ; Push COORD as DWORD (Y in high word, X in low word)
+    movzx eax, WORD PTR tempCoord.Y
+    shl eax, 16
+    movzx ebx, WORD PTR tempCoord.X
+    or eax, ebx
+    push eax
     
-XDone:
-    inc y
-    jmp YLoop
+    movzx eax, WORD PTR tempSize.Y
+    shl eax, 16
+    movzx ebx, WORD PTR tempSize.X
+    or eax, ebx
+    push eax
     
-YDone:
+    push OFFSET consoleBuffer
+    push hStdOut
+    call WriteConsoleOutputA
+    
     ret
-FlushBuffer ENDP
+PresentFrame ENDP
 
 ; ----------------------------------------------------------------------------
 ; Procedure: RenderFooter
@@ -340,16 +349,16 @@ RenderHUD ENDP
 
 ; ----------------------------------------------------------------------------
 ; Procedure: RenderPlayer
-; Description: Render player character
+; Description: Render player character to buffer
 ; ----------------------------------------------------------------------------
 RenderPlayer PROC
-    invoke SetBufferChar, player.x, player.y, CHAR_PLAYER, COLOR_PLAYER
+    invoke DrawPixel, player.x, player.y, CHAR_PLAYER, COLOR_PLAYER
     ret
 RenderPlayer ENDP
 
 ; ----------------------------------------------------------------------------
 ; Procedure: RenderBalloons
-; Description: Render all active balloons
+; Description: Render all active balloons to buffer
 ; ----------------------------------------------------------------------------
 RenderBalloons PROC
     LOCAL i:DWORD
@@ -380,7 +389,7 @@ YellowBalloon:
     mov balloonColor, COLOR_BALLOON_YELLOW
     
 RenderBalloon:
-    invoke SetBufferChar, [ebx].ENTITY.x, [ebx].ENTITY.y, CHAR_BALLOON, balloonColor
+    invoke DrawPixel, [ebx].ENTITY.x, [ebx].ENTITY.y, CHAR_BALLOON, balloonColor
     
 NextBalloon:
     add balloonPtr, SIZEOF ENTITY
@@ -393,7 +402,7 @@ RenderBalloons ENDP
 
 ; ----------------------------------------------------------------------------
 ; Procedure: RenderProjectiles
-; Description: Render all active projectiles
+; Description: Render all active projectiles to buffer
 ; ----------------------------------------------------------------------------
 RenderProjectiles PROC
     LOCAL i:DWORD
@@ -412,7 +421,7 @@ ProjLoop:
     je NextProj
     
     ; Render projectile
-    invoke SetBufferChar, [ebx].ENTITY.x, [ebx].ENTITY.y, CHAR_ARROW, COLOR_ARROW
+    invoke DrawPixel, [ebx].ENTITY.x, [ebx].ENTITY.y, CHAR_ARROW, COLOR_ARROW
     
 NextProj:
     add projPtr, SIZEOF ENTITY
@@ -425,19 +434,21 @@ RenderProjectiles ENDP
 
 ; ----------------------------------------------------------------------------
 ; Procedure: RenderGame
-; Description: Main game rendering procedure
+; Description: Main game rendering procedure with double buffering
 ; ----------------------------------------------------------------------------
 RenderGame PROC
-    call ClearBuffers
+    ; Clear the back buffer
+    call ClearBuffer
     
+    ; Draw all game elements to buffer
     call RenderBalloons
     call RenderProjectiles
     call RenderPlayer
-    
-    call FlushBuffer
-    
     call RenderHUD
     call RenderFooter
+    
+    ; Present the frame (flip buffer to screen)
+    call PresentFrame
     
     ret
 RenderGame ENDP

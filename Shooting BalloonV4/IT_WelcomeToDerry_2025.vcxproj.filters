@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Core">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Renderer">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\GameLogic">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2F1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Input">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2F2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\States">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2F3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Levels">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2F4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Utils">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2F5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Include">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2F6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Documentation">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2F7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="Src\Core\main.asm">
+      <Filter>Src\Core</Filter>
+    </MASM>
+    <MASM Include="Src\Core\global_data.asm">
+      <Filter>Src\Core</Filter>
+    </MASM>
+    <MASM Include="Src\Renderer\render_core.asm">
+      <Filter>Src\Renderer</Filter>
+    </MASM>
+    <MASM Include="Src\Renderer\draw_shapes.asm">
+      <Filter>Src\Renderer</Filter>
+    </MASM>
+    <MASM Include="Src\GameLogic\game_orchestrator.asm">
+      <Filter>Src\GameLogic</Filter>
+    </MASM>
+    <MASM Include="Src\GameLogic\player.asm">
+      <Filter>Src\GameLogic</Filter>
+    </MASM>
+    <MASM Include="Src\GameLogic\enemies.asm">
+      <Filter>Src\GameLogic</Filter>
+    </MASM>
+    <MASM Include="Src\GameLogic\collision.asm">
+      <Filter>Src\GameLogic</Filter>
+    </MASM>
+    <MASM Include="Src\Input\input_mgr.asm">
+      <Filter>Src\Input</Filter>
+    </MASM>
+    <MASM Include="Src\States\states.asm">
+      <Filter>Src\States</Filter>
+    </MASM>
+    <MASM Include="Src\Levels\levels.asm">
+      <Filter>Src\Levels</Filter>
+    </MASM>
+    <MASM Include="Src\Utils\utils.asm">
+      <Filter>Src\Utils</Filter>
+    </MASM>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Src\Include\bindings.inc">
+      <Filter>Src\Include</Filter>
+    </None>
+    <None Include="Src\Include\common.inc">
+      <Filter>Src\Include</Filter>
+    </None>
+    <None Include="Src\Include\protos.inc">
+      <Filter>Src\Include</Filter>
+    </None>
+    <None Include="README.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="DOUBLE_BUFFERING_IMPLEMENTATION.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="RENDERING_API_REFERENCE.txt">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="REORGANIZATION_GUIDE.md">
+      <Filter>Documentation</Filter>
+    </None>
+  </ItemGroup>
+</Project>

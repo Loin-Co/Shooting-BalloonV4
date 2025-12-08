@@ -1,34 +1,24 @@
 ; ============================================================================
 ; states.asm - Menu, Intro, and Game Over Rendering Procedures
+; Location: Src/States/
 ; ============================================================================
 
 .386
 .model flat, stdcall
 option casemap:none
 
-include common.inc
+include Src\Include\common.inc
+include Src\Include\protos.inc
 
 ; ============================= EXTERNAL DATA ================================
 EXTERN hStdOut:DWORD
 EXTERN nextState:DWORD
 
-; From render.asm
-WriteString PROTO :DWORD, :DWORD, :DWORD, :DWORD
-ClearScreen PROTO
-PresentFrame PROTO
-ClearBuffer PROTO
-
-; From utils.asm
-StrLen PROTO :DWORD
-
-; Public exports
+; ============================= PUBLIC EXPORTS ===============================
 PUBLIC RenderSplash
 PUBLIC RenderMenu
 PUBLIC RenderGameOver
 PUBLIC menuSelection
-
-; Internal prototypes
-CenterText PROTO :DWORD
 
 ; ============================= DATA SECTION =================================
 .data

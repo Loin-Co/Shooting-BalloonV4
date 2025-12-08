@@ -1,32 +1,14 @@
 ; ============================================================================
-; main.asm - Entry Point & State Machine Loop
-; IT: Welcome to Derry 2025 - Balloon Shooting Game
+; main.asm - Entry Point & Main Game Loop State Machine
+; Location: Src/Core/
 ; ============================================================================
 
 .386
 .model flat, stdcall
 option casemap:none
 
-include common.inc
-
-; ============================= EXTERNAL PROCEDURES ==========================
-; From states.asm
-RenderSplash PROTO
-RenderMenu PROTO
-RenderGameOver PROTO
-
-; From render.asm
-RenderGame PROTO
-ClearScreen PROTO
-InitRenderer PROTO
-
-; From physics.asm
-UpdateGame PROTO
-HandleInput PROTO
-InitGame PROTO
-
-; From utils.asm
-InitRandom PROTO
+include Src\Include\common.inc
+include Src\Include\protos.inc
 
 ; ============================= DATA SECTION =================================
 .data
@@ -85,8 +67,8 @@ CenterConsoleWindow PROC
     mov consoleWindow, eax
     
     ; Calculate window dimensions (approximate for 80x25 console)
-    mov windowWidth, 640    ; Approximate pixel width
-    mov windowHeight, 400   ; Approximate pixel height
+    mov windowWidth, 640
+    mov windowHeight, 400
     
     ; Calculate centered position
     mov eax, screenWidth
@@ -153,7 +135,7 @@ StateTransition ENDP
 
 ; ----------------------------------------------------------------------------
 ; Procedure: StateMachine
-; Description: Main game loop state machine
+; Description: Main game loop state machine (60 FPS)
 ; ----------------------------------------------------------------------------
 StateMachine PROC
     LOCAL tickCount:DWORD
@@ -231,7 +213,7 @@ HandleGameOver:
     jmp EndStateCheck
     
 EndStateCheck:
-    ; Frame rate limiting
+    ; Frame rate limiting (60 FPS)
     invoke Sleep, frameTime
     
     ; Check if still running
@@ -247,7 +229,7 @@ StateMachine ENDP
 ; ----------------------------------------------------------------------------
 ; Procedure: main
 ; Description: Program entry point
-; ----------------------------------------------------------------------------
+; ============================================================================
 main PROC
     ; Initialize console
     call InitConsole
@@ -258,11 +240,14 @@ main PROC
     ; Initialize game data
     call InitGame
     
+    ; Initialize level system
+    call InitLevels
+    
     ; Set initial state
     mov currentState, STATE_SPLASH
     mov nextState, STATE_SPLASH
     
-    ; Run state machine
+    ; Run state machine (game loop)
     call StateMachine
     
     ; Exit
