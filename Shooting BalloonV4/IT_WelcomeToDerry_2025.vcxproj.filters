@@ -60,15 +60,13 @@
     <MASM Include="Src\Input\input_mgr.asm">
       <Filter>Src\Input</Filter>
     </MASM>
-    <MASM Include="Src\States\states.asm">
-      <Filter>Src\States</Filter>
-    </MASM>
     <MASM Include="Src\Levels\levels.asm">
       <Filter>Src\Levels</Filter>
     </MASM>
     <MASM Include="Src\Utils\utils.asm">
       <Filter>Src\Utils</Filter>
     </MASM>
+    <MASM Include="Src\States\states.asm" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Src\Include\bindings.inc">
@@ -92,5 +90,9 @@
     <None Include="REORGANIZATION_GUIDE.md">
       <Filter>Documentation</Filter>
     </None>
+    <None Include="LOADING_SCREEN_ENHANCEMENTS.md" />
+    <None Include="LEVEL_SELECT_IMPLEMENTATION.md" />
+    <None Include="LEVEL_SELECT_VISUAL_DESIGN.md" />
+    <None Include="INPUT_CARRYOVER_FIX.md" />
   </ItemGroup>
 </Project>
