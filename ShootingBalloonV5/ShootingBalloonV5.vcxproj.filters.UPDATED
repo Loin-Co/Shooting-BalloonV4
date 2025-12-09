@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- ========================================
+       FILTER STRUCTURE DEFINITION
+       (Virtual folders - no physical folders)
+       ======================================== -->
+  <ItemGroup>
+    <Filter Include="Core">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameLogic">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{A8B8E5C1-2D3F-4E6A-9C7B-1D4E5F6A7B8C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Audio">
+      <UniqueIdentifier>{B9C9F6D2-3E4F-5F7B-AD8C-2E5F6G7C8D9E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Initializer">
+      <UniqueIdentifier>{C1D1G7E3-4F5G-6G8C-BE9D-3F6G7H8D9E1F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{D2E2H8F4-5G6H-7H9D-CF1E-4G7H8I9E1F2G}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Views">
+      <UniqueIdentifier>{F4G4J1H6-7I8J-9J2F-EH3G-6I9J1K2G3H4I}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Documentation">
+      <UniqueIdentifier>{E3F3I9G5-6H7I-8I1E-DG2F-5H8I9J1F2G3H}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Build Scripts">
+      <UniqueIdentifier>{G5H5K2I7-8J9K-1K3G-FI4H-7J1K2L3H4I5J}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <!-- ========================================
+       ASSEMBLY SOURCE FILES (.asm)
+       ======================================== -->
+  <ItemGroup>
+    <!-- Core System Files -->
+    <MASM Include="main.asm">
+      <Filter>Core</Filter>
+    </MASM>
+    <MASM Include="Src\global_data.asm">
+      <Filter>Core</Filter>
+    </MASM>
+    <!-- Rendering Engine -->
+    <MASM Include="Src\render_core.asm">
+      <Filter>Renderer</Filter>
+    </MASM>
+    <MASM Include="Src\draw_shapes.asm">
+      <Filter>Renderer</Filter>
+    </MASM>
+    <!-- System Initialization -->
+    <MASM Include="Src\sys_init.asm">
+      <Filter>Initializer</Filter>
+    </MASM>
+    <!-- Input System -->
+    <MASM Include="Src\input_mgr.asm">
+      <Filter>Input</Filter>
+    </MASM>
+    <!-- Game Logic -->
+    <MASM Include="Src\player.asm">
+      <Filter>GameLogic</Filter>
+    </MASM>
+    <MASM Include="Src\enemies.asm">
+      <Filter>GameLogic</Filter>
+    </MASM>
+    <MASM Include="Src\collision.asm">
+      <Filter>GameLogic</Filter>
+    </MASM>
+    <!-- Audio System -->
+    <MASM Include="Src\audio_mgr.asm">
+      <Filter>Audio</Filter>
+    </MASM>
+    <!-- Views (UI Screens) -->
+    <MASM Include="Src\loading_screen.asm">
+      <Filter>Views</Filter>
+    </MASM>
+    <MASM Include="Src\menu.asm">
+      <Filter>Views</Filter>
+    </MASM>
+    <MASM Include="Src\level_select.asm">
+      <Filter>Views</Filter>
+    </MASM>
+    <MASM Include="Src\instructions.asm">
+      <Filter>Views</Filter>
+    </MASM>
+  </ItemGroup>
+  <!-- ========================================
+       INCLUDE FILES (.inc)
+       ======================================== -->
+  <ItemGroup>
+    <None Include="Src\Include\common.inc">
+      <Filter>Include</Filter>
+    </None>
+    <None Include="Src\Include\protos.inc">
+      <Filter>Include</Filter>
+    </None>
+    <None Include="Src\Include\windows.inc">
+      <Filter>Include</Filter>
+    </None>
+    <None Include="Src\Include\kernel32.inc">
+      <Filter>Include</Filter>
+    </None>
+    <None Include="Src\Include\msvcrt.inc">
+      <Filter>Include</Filter>
+    </None>
+    <None Include="Src\Include\user32.inc">
+      <Filter>Include</Filter>
+    </None>
+    <!-- Build Configuration -->
+    <None Include="MASM32.props">
+      <Filter>Build Scripts</Filter>
+    </None>
+    <None Include="build.bat">
+      <Filter>Build Scripts</Filter>
+    </None>
+    <None Include="CLEANUP.bat">
+      <Filter>Build Scripts</Filter>
+    </None>
+    <None Include="FAST_BUILD.bat">
+      <Filter>Build Scripts</Filter>
+    </None>
+    <None Include="ADD_UI_FILES.bat">
+      <Filter>Build Scripts</Filter>
+    </None>
+    <None Include="ADD_UI_FILES.ps1">
+      <Filter>Build Scripts</Filter>
+    </None>
+    <!-- Documentation Files -->
+    <None Include="README.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="MASM32_SETUP.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="FIX_INSTRUCTIONS.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="BUILD_INSTRUCTIONS.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="QUICK_FIX.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="SUMMARY.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="VS_DEBUGGER_FIX.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="QUICK_VS_FIX.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="README_VS_FIX.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="BUILD_SUCCESS.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="ALL_ERRORS_FIXED.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="BUILD_OPTIMIZATION.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="REORGANIZATION_COMPLETE.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="START_HERE.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="WHAT_WAS_DONE.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="UI_IMPLEMENTATION_COMPLETE.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="COMPLETE_UI_GUIDE.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="IMPLEMENTATION_SUMMARY.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="README_UI_SYSTEM.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="ShootingBalloonV5.vcxproj.filters.NEW">
+      <Filter>Documentation</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="QUICK_REFERENCE.txt">
+      <Filter>Documentation</Filter>
+    </Text>
+    <Text Include="QUICK_START.txt">
+      <Filter>Documentation</Filter>
+    </Text>
+    <Text Include="ARCHITECTURE_DIAGRAM.txt">
+      <Filter>Documentation</Filter>
+    </Text>
+  </ItemGroup>
+</Project>

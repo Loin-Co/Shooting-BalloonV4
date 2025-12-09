@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <IncludePath>$(ProjectDir)Src\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <MASM>
+      <IncludePaths>$(ProjectDir)Src\Include;%(IncludePaths)</IncludePaths>
+      <AssembledCodeListingFile>$(IntDir)%(Filename).lst</AssembledCodeListingFile>
+      <PreserveIdentifierCase>true</PreserveIdentifierCase>
+    </MASM>
+    <Link>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;msvcrt.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
+      <EntryPointSymbol>start</EntryPointSymbol>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>

@@ -1,0 +1,113 @@
+=============================================================================
+                    MANUAL FIX - DO THIS IN VISUAL STUDIO
+=============================================================================
+
+Since the automated script didn't work, let's fix it manually in Visual Studio.
+This takes 1 minute and works 100% of the time.
+
+=============================================================================
+STEP-BY-STEP INSTRUCTIONS:
+=============================================================================
+
+STEP 1: Create the Views Filter
+????????????????????????????????
+  1. Look at Solution Explorer (usually on the right side)
+  2. Find "ShootingBalloonV5" project (has a C++ icon)
+  3. RIGHT-CLICK on "ShootingBalloonV5"
+  4. Click "Add" ? "New Filter"
+  5. Type: Views
+  6. Press ENTER
+
+  You should now see a new folder icon labeled "Views"
+
+
+STEP 2: Move the UI Files into Views Filter
+????????????????????????????????????????????
+  Look for these 4 files (they're probably at the bottom):
+    • instructions.asm
+    • level_select.asm
+    • menu.asm
+    • loading_screen.asm
+
+  For EACH file:
+    1. Click and HOLD the file
+    2. DRAG it to the Views filter
+    3. Release (drop it there)
+
+  Repeat for all 4 files.
+
+
+STEP 3: Verify
+??????????????
+  Click the arrow next to Views filter to expand it.
+  You should see all 4 files inside:
+    ?? Views
+       ??? instructions.asm
+       ??? level_select.asm
+       ??? menu.asm
+       ??? loading_screen.asm
+
+=============================================================================
+VISUAL GUIDE:
+=============================================================================
+
+  Before dragging:
+  ????????????????
+    Solution Explorer
+    ??? ShootingBalloonV5
+        ??? ?? Audio
+        ??? ?? Core
+        ??? ?? GameLogic
+        ??? ?? Include
+        ??? ?? Views (empty - just created)
+        ??? ?? instructions.asm  ? Drag this
+        ??? ?? level_select.asm  ? Drag this
+        ??? ?? menu.asm          ? Drag this
+        ??? ?? loading_screen.asm ? Drag this
+
+  After dragging:
+  ???????????????
+    Solution Explorer
+    ??? ShootingBalloonV5
+        ??? ?? Audio
+        ??? ?? Core
+        ??? ?? GameLogic
+        ??? ?? Include
+        ??? ?? Views
+            ??? ?? instructions.asm
+            ??? ?? level_select.asm
+            ??? ?? menu.asm
+            ??? ?? loading_screen.asm
+
+=============================================================================
+TIPS:
+=============================================================================
+
+  • If you can't find the files, scroll down in Solution Explorer
+  • The files might be mixed with documentation files
+  • Look for the .asm extension
+  • Make sure you're dragging to the Views FILTER, not a folder
+  • The filter icon looks like a folder with a funnel/filter symbol
+
+=============================================================================
+WHY THE SCRIPT DIDN'T WORK:
+=============================================================================
+
+  Possible reasons:
+  1. The .vcxproj.filters file was locked by Visual Studio
+  2. File paths didn't match exactly
+  3. PowerShell execution policy blocked the script
+  4. The file structure was different than expected
+
+  The manual method bypasses all these issues and always works!
+
+=============================================================================
+AFTER YOU'RE DONE:
+=============================================================================
+
+  1. Save the project (Ctrl+S)
+  2. The Views filter is now permanent
+  3. Visual Studio automatically updated .vcxproj.filters file
+  4. You're done! ?
+
+=============================================================================

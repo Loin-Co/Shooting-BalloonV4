@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- ========================================
+       FOLDER STRUCTURE DEFINITION
+       ======================================== -->
+  <ItemGroup>
+    <Filter Include="Core">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameLogic">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{A8B8E5C1-2D3F-4E6A-9C7B-1D4E5F6A7B8C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Audio">
+      <UniqueIdentifier>{B9C9F6D2-3E4F-5F7B-AD8C-2E5F6G7C8D9E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Initializer">
+      <UniqueIdentifier>{C1D1G7E3-4F5G-6G8C-BE9D-3F6G7H8D9E1F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{D2E2H8F4-5G6H-7H9D-CF1E-4G7H8I9E1F2G}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Documentation">
+      <UniqueIdentifier>{E3F3I9G5-6H7I-8I1E-DG2F-5H8I9J1F2G3H}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <!-- ========================================
+       ASSEMBLY SOURCE FILES (.asm)
+       ======================================== -->
+  <ItemGroup>
+    <!-- Core System Files -->
+    <MASM Include="main.asm">
+      <Filter>Core</Filter>
+    </MASM>
+    <MASM Include="Src\Core\global_data.asm">
+      <Filter>Core</Filter>
+    </MASM>
+    <!-- Rendering Engine -->
+    <MASM Include="Src\Renderer\render_core.asm">
+      <Filter>Renderer</Filter>
+    </MASM>
+    <MASM Include="Src\Renderer\draw_shapes.asm">
+      <Filter>Renderer</Filter>
+    </MASM>
+    <!-- System Initialization -->
+    <MASM Include="Src\Initializer\sys_init.asm">
+      <Filter>Initializer</Filter>
+    </MASM>
+    <!-- Input System -->
+    <MASM Include="Src\Input\input_mgr.asm">
+      <Filter>Input</Filter>
+    </MASM>
+    <!-- Game Logic -->
+    <MASM Include="Src\GameLogic\player.asm">
+      <Filter>GameLogic</Filter>
+    </MASM>
+    <MASM Include="Src\GameLogic\enemies.asm">
+      <Filter>GameLogic</Filter>
+    </MASM>
+    <MASM Include="Src\GameLogic\collision.asm">
+      <Filter>GameLogic</Filter>
+    </MASM>
+    <!-- Audio System -->
+    <MASM Include="Src\Audio\audio_mgr.asm">
+      <Filter>Audio</Filter>
+    </MASM>
+    <MASM Include="Src\Views\loading_screen.asm" />
+    <MASM Include="Src\Views\menu.asm" />
+    <MASM Include="Src\Views\level_select.asm" />
+    <MASM Include="Src\Views\instructions.asm" />
+  </ItemGroup>
+  <!-- ========================================
+       INCLUDE FILES (.inc)
+       ======================================== -->
+  <ItemGroup>
+    <None Include="Src\Include\common.inc">
+      <Filter>Include</Filter>
+    </None>
+    <None Include="Src\Include\protos.inc">
+      <Filter>Include</Filter>
+    </None>
+    <None Include="Src\Include\windows.inc">
+      <Filter>Include</Filter>
+    </None>
+    <None Include="Src\Include\kernel32.inc">
+      <Filter>Include</Filter>
+    </None>
+    <None Include="Src\Include\msvcrt.inc">
+      <Filter>Include</Filter>
+    </None>
+    <None Include="Src\Include\user32.inc">
+      <Filter>Include</Filter>
+    </None>
+    <!-- Build Configuration -->
+    <None Include="MASM32.props">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="build.bat">
+      <Filter>Documentation</Filter>
+    </None>
+    <!-- Documentation Files -->
+    <None Include="README.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="MASM32_SETUP.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="FIX_INSTRUCTIONS.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="BUILD_INSTRUCTIONS.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="QUICK_FIX.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="SUMMARY.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="VS_DEBUGGER_FIX.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="QUICK_VS_FIX.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="DO_THIS_NOW.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="README_VS_FIX.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="BUILD_SUCCESS.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="ALL_ERRORS_FIXED.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="BUILD_OPTIMIZATION.md" />
+    <None Include="CLEANUP.bat" />
+    <None Include="FAST_BUILD.bat" />
+    <None Include="REORGANIZATION_COMPLETE.md" />
+    <None Include="ShootingBalloonV5.vcxproj.filters.NEW" />
+    <None Include="START_HERE.md" />
+    <None Include="WHAT_WAS_DONE.md" />
+    <None Include="UI_IMPLEMENTATION_COMPLETE.md" />
+    <None Include="ADD_UI_FILES.ps1" />
+    <None Include="ADD_UI_FILES.bat" />
+    <None Include="COMPLETE_UI_GUIDE.md" />
+    <None Include="IMPLEMENTATION_SUMMARY.md" />
+    <None Include="README_UI_SYSTEM.md" />
+    <None Include="REMOVE_FOLDERS.bat" />
+    <None Include="ShootingBalloonV5.vcxproj.filters.UPDATED" />
+    <None Include="APPLY_FILTERS_ONLY.bat" />
+    <None Include="FILTERS_SETUP_COMPLETE.md" />
+    <None Include="README_FILTERS_CONVERSION.md" />
+    <None Include="ADD_VIEWS_FILTER.ps1" />
+    <None Include="ADD_VIEWS_FILTER.bat" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="QUICK_REFERENCE.txt" />
+    <Text Include="QUICK_START.txt" />
+    <Text Include="ARCHITECTURE_DIAGRAM.txt" />
+    <Text Include="FILTERS_ONLY_GUIDE.txt" />
+    <Text Include="FILTERS_QUICK_REFERENCE.txt" />
+    <Text Include="BEFORE_AFTER_DIAGRAM.txt" />
+    <Text Include="START_FILTERS_CONVERSION.txt" />
+    <Text Include="SUMMARY_FILTERS_CONVERSION.txt" />
+    <Text Include="DO_THIS_NOW.txt" />
+    <Text Include="INDEX_FILTERS_DOCS.txt" />
+    <Text Include="ALL_READY.txt" />
+    <Text Include="ADD_VIEWS_FILTER_GUIDE.txt" />
+    <Text Include="VIEWS_FILTER_SOLUTION.txt" />
+    <Text Include="FIX_VIEWS_NOW.txt" />
+    <Text Include="MANUAL_FIX_VIEWS.txt" />
+    <Text Include="LOADING_SCREEN_UPDATED.txt" />
+    <Text Include="LOADING_SCREEN_PREVIEW.txt" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,84 @@
+=============================================================================
+                   ?? ADD VIEWS FILTER - QUICK GUIDE
+=============================================================================
+
+The Views filter is missing from your Solution Explorer.
+This will fix it!
+
+=============================================================================
+? HOW TO FIX (30 SECONDS):
+=============================================================================
+
+  STEP 1: Close Visual Studio
+  ????????????????????????????
+    • Save all files (Ctrl+Shift+S)
+    • File ? Exit
+    • Wait for VS to fully close
+
+  STEP 2: Run the script
+  ??????????????????????
+    • Double-click: ADD_VIEWS_FILTER.bat
+    • Wait for completion
+
+  STEP 3: Reopen Visual Studio
+  ?????????????????????????????
+    • Open ShootingBalloonV5.sln
+    • Check Solution Explorer
+    • Views filter should now appear!
+
+=============================================================================
+? WHAT THIS DOES:
+=============================================================================
+
+  Before:
+    Your UI files appear at the bottom of Solution Explorer:
+      - instructions.asm
+      - level_select.asm
+      - menu.asm
+      - loading_screen.asm
+
+  After:
+    ?? Views (filter)
+       ??? instructions.asm
+       ??? level_select.asm
+       ??? menu.asm
+       ??? loading_screen.asm
+
+=============================================================================
+?? MANUAL METHOD (if script fails):
+=============================================================================
+
+  If you prefer to do it manually in Visual Studio:
+
+  1. Right-click on "ShootingBalloonV5" project
+  2. Select "Add ? New Filter"
+  3. Name it "Views"
+  4. Drag these files into the Views filter:
+     - instructions.asm
+     - level_select.asm
+     - menu.asm
+     - loading_screen.asm
+  5. Done!
+
+=============================================================================
+?? IMPORTANT:
+=============================================================================
+
+  • Visual Studio MUST be closed before running the script
+  • A backup is created automatically (.vcxproj.filters.BACKUP)
+  • This only affects how files appear in Solution Explorer
+  • Physical files remain unchanged
+
+=============================================================================
+?? FILES CREATED:
+=============================================================================
+
+  ADD_VIEWS_FILTER.bat - Main script (run this)
+  ADD_VIEWS_FILTER.ps1 - PowerShell script (called by .bat)
+  ADD_VIEWS_FILTER_GUIDE.txt - This guide
+
+=============================================================================
+
+                   ?? Run ADD_VIEWS_FILTER.bat now! ??
+
+=============================================================================

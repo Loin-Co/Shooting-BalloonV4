@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{097827bb-d729-4de5-92ec-ffdd724ddc0b}</ProjectGuid>
+    <RootNamespace>ShootingBalloonV5</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <MASM>
+      <IncludePaths>$(ProjectDir)Src\Include</IncludePaths>
+    </MASM>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <MASM>
+      <IncludePaths>$(ProjectDir)Src\Include</IncludePaths>
+    </MASM>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <MASM Include="main.asm">
+      <FileType>Document</FileType>
+    </MASM>
+    <MASM Include="Src\Audio\audio_mgr.asm" />
+    <MASM Include="Src\Core\global_data.asm" />
+    <MASM Include="Src\GameLogic\collision.asm" />
+    <MASM Include="Src\GameLogic\enemies.asm" />
+    <MASM Include="Src\GameLogic\player.asm" />
+    <MASM Include="Src\Initializer\sys_init.asm" />
+    <MASM Include="Src\Input\input_mgr.asm" />
+    <MASM Include="Src\Renderer\draw_shapes.asm" />
+    <MASM Include="Src\Renderer\render_core.asm" />
+    <MASM Include="Src\Views\instructions.asm" />
+    <MASM Include="Src\Views\level_select.asm" />
+    <MASM Include="Src\Views\loading_screen.asm" />
+    <MASM Include="Src\Views\menu.asm" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ADD_UI_FILES.bat" />
+    <None Include="ADD_UI_FILES.ps1" />
+    <None Include="ADD_VIEWS_FILTER.bat" />
+    <None Include="ADD_VIEWS_FILTER.ps1" />
+    <None Include="ALL_ERRORS_FIXED.md" />
+    <None Include="APPLY_FILTERS_ONLY.bat" />
+    <None Include="build.bat" />
+    <None Include="BUILD_INSTRUCTIONS.md" />
+    <None Include="BUILD_OPTIMIZATION.md" />
+    <None Include="BUILD_SUCCESS.md" />
+    <None Include="CLEANUP.bat" />
+    <None Include="COMPLETE_UI_GUIDE.md" />
+    <None Include="DO_THIS_NOW.md" />
+    <None Include="FAST_BUILD.bat" />
+    <None Include="FILTERS_SETUP_COMPLETE.md" />
+    <None Include="FIX_INSTRUCTIONS.md" />
+    <None Include="IMPLEMENTATION_SUMMARY.md" />
+    <None Include="MASM32.props" />
+    <None Include="MASM32_SETUP.md" />
+    <None Include="QUICK_FIX.md" />
+    <None Include="QUICK_VS_FIX.md" />
+    <None Include="README.md" />
+    <None Include="README_FILTERS_CONVERSION.md" />
+    <None Include="README_UI_SYSTEM.md" />
+    <None Include="README_VS_FIX.md" />
+    <None Include="REMOVE_FOLDERS.bat" />
+    <None Include="REORGANIZATION_COMPLETE.md" />
+    <None Include="ShootingBalloonV5.vcxproj.filters.NEW" />
+    <None Include="ShootingBalloonV5.vcxproj.filters.UPDATED" />
+    <None Include="Src\Include\common.inc" />
+    <None Include="Src\Include\kernel32.inc" />
+    <None Include="Src\Include\msvcrt.inc" />
+    <None Include="Src\Include\protos.inc" />
+    <None Include="Src\Include\user32.inc" />
+    <None Include="Src\Include\windows.inc" />
+    <None Include="START_HERE.md" />
+    <None Include="SUMMARY.md" />
+    <None Include="UI_IMPLEMENTATION_COMPLETE.md" />
+    <None Include="VS_DEBUGGER_FIX.md" />
+    <None Include="WHAT_WAS_DONE.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ADD_VIEWS_FILTER_GUIDE.txt" />
+    <Text Include="ALL_READY.txt" />
+    <Text Include="ARCHITECTURE_DIAGRAM.txt" />
+    <Text Include="BEFORE_AFTER_DIAGRAM.txt" />
+    <Text Include="DO_THIS_NOW.txt" />
+    <Text Include="FILTERS_ONLY_GUIDE.txt" />
+    <Text Include="FILTERS_QUICK_REFERENCE.txt" />
+    <Text Include="FIX_VIEWS_NOW.txt" />
+    <Text Include="INDEX_FILTERS_DOCS.txt" />
+    <Text Include="LOADING_SCREEN_PREVIEW.txt" />
+    <Text Include="LOADING_SCREEN_UPDATED.txt" />
+    <Text Include="MANUAL_FIX_VIEWS.txt" />
+    <Text Include="QUICK_REFERENCE.txt" />
+    <Text Include="QUICK_START.txt" />
+    <Text Include="START_FILTERS_CONVERSION.txt" />
+    <Text Include="SUMMARY_FILTERS_CONVERSION.txt" />
+    <Text Include="VIEWS_FILTER_SOLUTION.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+  </ImportGroup>
+</Project>

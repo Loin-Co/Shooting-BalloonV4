@@ -1,0 +1,165 @@
+=============================================================================
+                 ? LOADING SCREEN UPDATED - DERRY THEME
+=============================================================================
+
+The loading screen has been completely redesigned to match the DERRY MAINFRAME
+aesthetic from your reference image.
+
+=============================================================================
+?? NEW DESIGN FEATURES:
+=============================================================================
+
+HEADER:
+  >_ DERRY MAINFRAME - v1958                              [ SYSTEM ]
+
+WELCOME MESSAGE:
+  W E L C O M E   T O   D E R R Y   2 0 2 5
+
+PROTOCOL:
+  [  BALLOON  SHOOTER  PROTOCOL  INITIATED  ]
+
+DYNAMIC LOADING MESSAGES:
+  > Loading Memory Modules...  OK
+  > Checking Fear Sensors...   WARNING: HIGH LEVELS
+  > Pennywise AI...            ACTIVE
+  > Loading Render.asm...      OK
+
+PROGRESS BAR:
+  LOADING RESOURCES:
+  [????????????????????????????????????????????????????????????] 64%
+
+PENNYWISE QUOTE:
+  "They all float down here..."
+
+=============================================================================
+? FEATURES:
+=============================================================================
+
+? ASCII border with proper corners (218, 191, 192, 217)
+? Dynamic loading messages appear one by one
+? Animated progress bar (60 characters wide)
+? Real-time percentage counter (0% ? 100%)
+? Two-tone progress bar:
+   - Filled portion: Medium blocks (?) in light gray
+   - Empty portion: Light dots (?) in dark gray
+? Themed colors matching DERRY aesthetic:
+   - Border: Light Red (THEME_BORDER)
+   - Text: Light Gray (THEME_TEXT_MAIN)
+   - Accents: Yellow (THEME_TEXT_ACCENT)
+   - Dimmed: Dark Gray (DARKGRAY)
+? Smooth timing and transitions
+? Automatic transition to main menu after completion
+
+=============================================================================
+?? LAYOUT:
+=============================================================================
+
+  Line  1: ????????????????? ASCII Border ?????????????????
+  Line  2: ? >_ DERRY MAINFRAME - v1958      [ SYSTEM ]  ?
+  Line  6: ?    W E L C O M E   T O   D E R R Y   2 0 2 5?
+  Line  8: ?  [ BALLOON SHOOTER PROTOCOL INITIATED ]      ?
+  Line 12: ? > Loading Memory Modules...  OK              ?
+  Line 13: ? > Checking Fear Sensors...   WARNING: HIGH   ?
+  Line 14: ? > Pennywise AI...            ACTIVE          ?
+  Line 15: ? > Loading Render.asm...      OK              ?
+  Line 18: ? LOADING RESOURCES:                           ?
+  Line 20: ? [?????????????????????????????????????] 64%  ?
+  Line 22: ? "They all float down here..."                ?
+  Line 27: ????????????????????????????????????????????????
+
+=============================================================================
+?? ANIMATION SEQUENCE:
+=============================================================================
+
+  0.0s  - Clear screen, draw border
+  0.3s  - Show header (DERRY MAINFRAME - v1958)
+  0.7s  - Show welcome message (WELCOME TO DERRY 2025)
+  1.1s  - Show protocol message
+  1.7s  - Show "Loading Memory Modules... OK"
+  2.0s  - Show "Checking Fear Sensors... WARNING: HIGH LEVELS"
+  2.3s  - Show "Pennywise AI... ACTIVE"
+  2.6s  - Show "Loading Render.asm... OK"
+  3.0s  - Show "LOADING RESOURCES:" label
+  3.2s  - Start progress bar animation (0% ? 100%)
+        - Each block: 25ms
+        - Total: ~1.5 seconds
+  4.7s  - Show "They all float down here..." quote
+  5.9s  - Transition to main menu
+
+  Total Duration: ~6 seconds
+
+=============================================================================
+?? COLOR SCHEME:
+=============================================================================
+
+  Border:       Light Red (0Ch) - Neon red aesthetic
+  Header:       Light Gray (07h) - Standard system text
+  Welcome:      Yellow (0Eh) - Highlighted text
+  Messages:     Light Gray (07h) - System logs
+  Progress Bar: 
+    - Filled:   Light Gray (07h) with blocks (?)
+    - Empty:    Dark Gray (08h) with dots (?)
+  Percentage:   Yellow (0Eh) - Accent color
+  Quote:        Yellow (0Eh) - Emphasis
+
+=============================================================================
+?? CODE CHANGES:
+=============================================================================
+
+File: Src/Views/loading_screen.asm
+
+Changes:
+  ? Updated all text messages to match DERRY theme
+  ? Added proper spacing and centering
+  ? Implemented two-tone progress bar
+  ? Added dynamic loading sequence
+  ? Extended border to line 27 (taller display)
+  ? Used proper ASCII box-drawing characters
+  ? Added percentage counter with real-time updates
+  ? Improved timing for better visual flow
+  ? Used existing theme constants (no new colors needed)
+
+=============================================================================
+? BUILD STATUS:
+=============================================================================
+
+  ? Code compiles successfully
+  ? No errors
+  ? No warnings
+  ? Ready to run!
+
+=============================================================================
+?? HOW TO TEST:
+=============================================================================
+
+  1. Build the project (F7 or Ctrl+Shift+B)
+  2. Run the game (F5)
+  3. Watch the loading screen animation
+  4. Verify:
+     - Border appears correctly
+     - Messages appear one by one
+     - Progress bar fills smoothly
+     - Percentage updates in real-time
+     - Quote appears at the end
+     - Transitions to main menu
+
+=============================================================================
+?? MATCHES YOUR IMAGE:
+=============================================================================
+
+  ? DERRY MAINFRAME header with version
+  ? [ SYSTEM ] tag on the right
+  ? Spaced WELCOME message
+  ? BALLOON SHOOTER PROTOCOL text
+  ? Loading messages with status (OK, WARNING, ACTIVE)
+  ? LOADING RESOURCES label
+  ? Progress bar with mixed blocks (filled/empty)
+  ? Percentage counter
+  ? "They all float down here..." quote
+  ? Proper ASCII border
+
+=============================================================================
+
+                   Press F5 to see the new loading screen! ??
+
+=============================================================================

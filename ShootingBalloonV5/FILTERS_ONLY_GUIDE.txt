@@ -1,0 +1,189 @@
+=============================================================================
+                 ??? REMOVE FOLDERS - USE FILTERS ONLY
+=============================================================================
+
+This guide will help you reorganize your project to use FILTERS ONLY 
+(no physical folders). All files will be in flat structure but appear 
+organized in Visual Studio through filters.
+
+=============================================================================
+?? WHAT WILL HAPPEN:
+=============================================================================
+
+BEFORE:
+  ShootingBalloonV5/
+  ??? main.asm
+  ??? Src/
+      ??? Audio/
+      ?   ??? audio_mgr.asm
+      ??? Core/
+      ?   ??? global_data.asm
+      ??? GameLogic/
+      ?   ??? player.asm
+      ?   ??? enemies.asm
+      ?   ??? collision.asm
+      ??? Include/
+      ?   ??? *.inc files
+      ??? Initializer/
+      ?   ??? sys_init.asm
+      ??? Input/
+      ?   ??? input_mgr.asm
+      ??? Renderer/
+      ?   ??? render_core.asm
+      ?   ??? draw_shapes.asm
+      ??? Views/
+          ??? loading_screen.asm
+          ??? menu.asm
+          ??? level_select.asm
+          ??? instructions.asm
+
+AFTER:
+  ShootingBalloonV5/
+  ??? main.asm
+  ??? Src/
+      ??? audio_mgr.asm
+      ??? global_data.asm
+      ??? player.asm
+      ??? enemies.asm
+      ??? collision.asm
+      ??? sys_init.asm
+      ??? input_mgr.asm
+      ??? render_core.asm
+      ??? draw_shapes.asm
+      ??? loading_screen.asm
+      ??? menu.asm
+      ??? level_select.asm
+      ??? instructions.asm
+      ??? Include/
+          ??? *.inc files (kept in subfolder)
+
+IN VISUAL STUDIO (filters view):
+  ?? Core
+     - main.asm
+     - global_data.asm
+  ?? GameLogic
+     - player.asm
+     - enemies.asm
+     - collision.asm
+  ?? Renderer
+     - render_core.asm
+     - draw_shapes.asm
+  ?? Input
+     - input_mgr.asm
+  ?? Audio
+     - audio_mgr.asm
+  ?? Initializer
+     - sys_init.asm
+  ?? Views
+     - loading_screen.asm
+     - menu.asm
+     - level_select.asm
+     - instructions.asm
+  ?? Include
+     - *.inc files
+  ?? Documentation
+     - *.md files
+  ?? Build Scripts
+     - *.bat files
+
+=============================================================================
+? QUICK START (AUTOMATIC):
+=============================================================================
+
+1. Close Visual Studio completely
+2. Run: APPLY_FILTERS_ONLY.bat
+3. Reopen Visual Studio
+4. Done! ?
+
+=============================================================================
+?? MANUAL STEPS (if automatic fails):
+=============================================================================
+
+STEP 1: Close Visual Studio
+  - Save all files
+  - File ? Exit
+
+STEP 2: Run folder cleanup
+  - Run: REMOVE_FOLDERS.bat
+  - This moves all .asm files to Src\ folder
+  - Removes empty physical folders
+
+STEP 3: Update filters file
+  - Delete: ShootingBalloonV5.vcxproj.filters
+  - Rename: ShootingBalloonV5.vcxproj.filters.UPDATED
+       to: ShootingBalloonV5.vcxproj.filters
+
+STEP 4: Update project file paths
+  - Run: UPDATE_PROJECT_PATHS.bat
+  - This updates .vcxproj to point to new file locations
+
+STEP 5: Reopen Visual Studio
+  - Open ShootingBalloonV5.sln
+  - Check Solution Explorer - you should see filters!
+
+=============================================================================
+? VERIFICATION:
+=============================================================================
+
+After reopening Visual Studio, verify:
+  [ ] Solution Explorer shows filters (not folders)
+  [ ] All .asm files visible in their respective filters
+  [ ] Views filter contains: loading_screen, menu, level_select, instructions
+  [ ] Project builds successfully (F7)
+  [ ] No "file not found" errors
+
+=============================================================================
+?? TROUBLESHOOTING:
+=============================================================================
+
+PROBLEM: "Cannot find file" errors when building
+SOLUTION: 
+  - Check that all .asm files are in Src\ folder
+  - Rebuild solution (Ctrl+Shift+B)
+
+PROBLEM: Files appear in wrong filters
+SOLUTION:
+  - Manually drag files to correct filter in Solution Explorer
+  - Visual Studio will update .vcxproj.filters automatically
+
+PROBLEM: Physical folders still visible
+SOLUTION:
+  - Make sure you closed Visual Studio before running scripts
+  - Delete physical folders manually from file explorer
+  - Refresh Solution Explorer (F5)
+
+PROBLEM: Include files not found during build
+SOLUTION:
+  - Verify Src\Include folder still exists
+  - Check MASM Include Path in project properties:
+    Project ? Properties ? Microsoft Macro Assembler ? General
+    Include Paths = $(ProjectDir)Src\Include
+
+=============================================================================
+?? IMPORTANT NOTES:
+=============================================================================
+
+• Include folder (Src\Include) is KEPT as physical folder
+  (needed for compiler to find .inc files)
+
+• All other .asm files moved to flat Src\ folder
+
+• Filters are VIRTUAL - they're just for organization in VS
+
+• You can create/rename filters anytime in Visual Studio:
+  Right-click filter ? Add ? New Filter
+
+• Deleting a filter doesn't delete files (they remain in project)
+
+=============================================================================
+?? BENEFITS OF FILTERS-ONLY APPROACH:
+=============================================================================
+
+? Cleaner file structure
+? Easier to navigate in file explorer
+? No nested folder issues
+? Faster builds (shorter paths)
+? Still organized in Visual Studio
+? Can reorganize without moving files
+
+=============================================================================
