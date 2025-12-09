@@ -145,11 +145,37 @@ CONSOLE_CURSOR_INFO ENDS
     ; Main menu options (old - keep for now)
     menuTitle db "MAIN MENU", 0
 
-    ; Level select
-    levelTitle db "SELECT DIFFICULTY", 0
-    levelEasy db "1. Easy - Float Away (5 Balloons)", 0
-    levelMedium db "2. Medium - Pennywise's Game (10 Balloons)", 0
-    levelHard db "3. Hard - You'll Float Too (15 Balloons)", 0
+    ; Level select - NEW DESIGN
+    levelSelectHeader db "BACK", 0
+    levelSelectTitle db "SELECT LOCATION", 0
+    levelDivider db "_____________________________________________", 0
+    
+    ; Level names and details
+    level1Name db "1. THE BARRENS (Easy)", 0
+    level1Stars db "[ * * * ]", 0
+    level1Best db "BEST: 450", 0
+    
+    level2Name db "2. NEIBOLT STREET (Easy)", 0
+    level2Stars db "[ * * * ]", 0
+    level2Best db "BEST: 380", 0
+    
+    level3Name db "3. DERRY CARNIVAL (Med)", 0
+    level3Stars db "[ * * * ]", 0
+    level3Best db "BEST: 290", 0
+    
+    level4Name db "4. CANAL DAYS (Med)", 0
+    level4Locked db "[ LOCKED ]", 0
+    
+    level5Name db "5. THE SEWERS (Hard)", 0
+    level5Locked db "[ LOCKED ]", 0
+    
+    level6Name db "6. IT'S LAIR (Expert)", 0
+    level6Locked db "[ LOCKED ]", 0
+    
+    levelPrompt db "[ PRESS ENTER TO PLAY ]", 0
+    
+    ; Level unlocked status (0 = locked, 1 = unlocked)
+    levelUnlocked db 1, 0, 0, 0, 0, 0
 
     ; Instructions
     instrTitle db "INSTRUCTIONS", 0
@@ -259,6 +285,18 @@ WriteChar PROC character:BYTE
     pop eax
     ret
 WriteChar ENDP
+
+WriteRepeatedChar PROC uses eax ecx character:BYTE, count:DWORD
+    mov ecx, count
+repeatLoop:
+    cmp ecx, 0
+    jle repeatDone
+    invoke WriteChar, character
+    dec ecx
+    jmp repeatLoop
+repeatDone:
+    ret
+WriteRepeatedChar ENDP
 
 SetCursor PROC
     ; EAX = X, EBX = Y
@@ -784,7 +822,7 @@ animLoop:
     mov eax, inputRecord.Event.bKeyDown
     cmp eax, 0
     je noInput
-    
+
     ; Any key pressed - exit animation
     jmp animExit
 
@@ -1132,55 +1170,212 @@ menu_stats:
 
 doLevelSelect:
     call ClearScreen
-    call DrawBorder
+    call DrawASCIIBorder
 
-    mov eax, 28
+    ; Header: "BACK ========= SELECT LOCATION ========="
+    mov eax, 3
+    mov ebx, 2
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    invoke WriteChar, 'B'
+    invoke WriteChar, 'A'
+    invoke WriteChar, 'C'
+    invoke WriteChar, 'K'
+    
+    invoke WriteChar, ' '
+    invoke WriteChar, ' '
+    invoke WriteChar, ' '
+    invoke WriteChar, ' '
+    invoke WriteChar, ' '
+    invoke WriteChar, ' '
+    invoke WriteChar, ' '
+    invoke WriteChar, ' '
+    
+    invoke WriteString, offset levelSelectTitle
+    
+    invoke WriteChar, ' '
+    invoke WriteChar, ' '
+    invoke WriteChar, ' '
+    invoke WriteChar, ' '
+    invoke WriteChar, ' '
+    invoke WriteChar, ' '
+    invoke WriteChar, ' '
+    invoke WriteChar, ' '
+
+    ; Draw divider line under header
+    mov eax, 3
     mov ebx, 3
     call SetCursor
-    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_BORDER
-    invoke WriteString, offset levelTitle
-    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    invoke WriteString, offset levelDivider
 
-    mov eax, 20
-    mov ebx, 8
+    ; Level 1 - THE BARRENS (Unlocked)
+    mov eax, 6
+    mov ebx, 5
     call SetCursor
     mov eax, levelSelection
     cmp eax, 0
-    jne level_opt1_normal
+    jne level1_normal
     invoke SetConsoleTextAttribute, hConsoleOutput, THEME_BTN_HOVER
-level_opt1_normal:
-    invoke WriteString, offset levelEasy
+    jmp level1_draw
+level1_normal:
     invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+level1_draw:
+    invoke WriteString, offset level1Name
+    
+    mov eax, 33
+    mov ebx, 5
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_ACCENT
+    invoke WriteString, offset level1Stars
+    
+    mov eax, 48
+    mov ebx, 5
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_ACCENT
+    invoke WriteString, offset level1Best
+    
+    ; Divider after level 1
+    mov eax, 6
+    mov ebx, 6
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    invoke WriteString, offset levelDivider
 
-    mov eax, 20
-    mov ebx, 10
+    ; Level 2 - NEIBOLT STREET (Unlocked)
+    mov eax, 6
+    mov ebx, 8
     call SetCursor
     mov eax, levelSelection
     cmp eax, 1
-    jne level_opt2_normal
+    jne level2_normal
     invoke SetConsoleTextAttribute, hConsoleOutput, THEME_BTN_HOVER
-level_opt2_normal:
-    invoke WriteString, offset levelMedium
+    jmp level2_draw
+level2_normal:
     invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+level2_draw:
+    invoke WriteString, offset level2Name
+    
+    mov eax, 33
+    mov ebx, 8
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_ACCENT
+    invoke WriteString, offset level2Stars
+    
+    mov eax, 48
+    mov ebx, 8
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_ACCENT
+    invoke WriteString, offset level2Best
+    
+    ; Divider after level 2
+    mov eax, 6
+    mov ebx, 9
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    invoke WriteString, offset levelDivider
 
-    mov eax, 20
-    mov ebx, 12
+    ; Level 3 - DERRY CARNIVAL (Unlocked)
+    mov eax, 6
+    mov ebx, 11
     call SetCursor
     mov eax, levelSelection
     cmp eax, 2
-    jne level_opt3_normal
+    jne level3_normal
     invoke SetConsoleTextAttribute, hConsoleOutput, THEME_BTN_HOVER
-level_opt3_normal:
-    invoke WriteString, offset levelHard
+    jmp level3_draw
+level3_normal:
     invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+level3_draw:
+    invoke WriteString, offset level3Name
+    
+    mov eax, 33
+    mov ebx, 11
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_ACCENT
+    invoke WriteString, offset level3Stars
+    
+    mov eax, 48
+    mov ebx, 11
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_ACCENT
+    invoke WriteString, offset level3Best
+    
+    ; Divider after level 3
+    mov eax, 6
+    mov ebx, 12
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    invoke WriteString, offset levelDivider
 
-    mov eax, 15
+    ; Level 4 - CANAL DAYS (LOCKED)
+    mov eax, 6
+    mov ebx, 14
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, DARKGRAY
+    invoke WriteString, offset level4Name
+    
+    mov eax, 33
+    mov ebx, 14
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_WARNING
+    invoke WriteString, offset level4Locked
+    
+    ; Divider after level 4
+    mov eax, 6
+    mov ebx, 15
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    invoke WriteString, offset levelDivider
+
+    ; Level 5 - THE SEWERS (LOCKED)
+    mov eax, 6
+    mov ebx, 17
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, DARKGRAY
+    invoke WriteString, offset level5Name
+    
+    mov eax, 33
+    mov ebx, 17
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_WARNING
+    invoke WriteString, offset level5Locked
+    
+    ; Divider after level 5
+    mov eax, 6
+    mov ebx, 18
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    invoke WriteString, offset levelDivider
+
+    ; Level 6 - IT'S LAIR (LOCKED)
+    mov eax, 6
     mov ebx, 20
     call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, DARKGRAY
+    invoke WriteString, offset level6Name
+    
+    mov eax, 33
+    mov ebx, 20
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_WARNING
+    invoke WriteString, offset level6Locked
+    
+    ; Divider after level 6
+    mov eax, 6
+    mov ebx, 21
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    invoke WriteString, offset levelDivider
+
+    ; Bottom prompt
+    mov eax, 27
+    mov ebx, 22
+    call SetCursor
     invoke SetConsoleTextAttribute, hConsoleOutput, THEME_BTN_NORMAL
-    invoke WriteString, offset pressEnterMsg
+    invoke WriteString, offset levelPrompt
     invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
 
+    invoke Sleep, 50
     call GetLevelInput
     jmp gameLoop
 
@@ -1331,12 +1526,9 @@ menuSelect:
     jmp menuInputDone
 
 selectStart:
-    ; Go directly to game with default settings
-    mov balloonCount, 5
-    mov score, 0
-    mov playerX, 40
-    mov playerY, 20
-    mov gameState, STATE_GAME_MODE
+    ; Go to level select instead of directly to game
+    mov gameState, STATE_LEVEL_SELECT
+    mov levelSelection, 0
     jmp menuInputDone
 
 selectInstr:
@@ -1399,27 +1591,34 @@ levelUp:
 
 levelDown:
     mov eax, levelSelection
-    cmp eax, 2
-    je waitLevelKey
+    cmp eax, 2  ; Can only select unlocked levels (0-2)
+    jge waitLevelKey
     inc levelSelection
     jmp levelInputDone
 
 levelSelect:
+    ; Check if selected level is unlocked
     mov eax, levelSelection
+    cmp eax, 2
+    jg waitLevelKey  ; Locked levels can't be selected
+    
+    ; Set balloon count based on level
     cmp eax, 0
-    je setEasy
+    je setLevel1
     cmp eax, 1
-    je setMedium
-    jmp setHard
+    je setLevel2
+    cmp eax, 2
+    je setLevel3
+    jmp waitLevelKey
 
-setEasy:
+setLevel1:
     mov balloonCount, 5
     jmp startGame
-setMedium:
-    mov balloonCount, 10
+setLevel2:
+    mov balloonCount, 8
     jmp startGame
-setHard:
-    mov balloonCount, 15
+setLevel3:
+    mov balloonCount, 10
 
 startGame:
     mov score, 0
@@ -1430,6 +1629,7 @@ startGame:
 
 levelBack:
     mov gameState, STATE_MAIN_MENU
+    mov levelSelection, 0
 
 levelInputDone:
     pop eax
