@@ -1,9 +1,37 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <MASM Include="main.asm" />
+    <None Include=".gitignore" />
   </ItemGroup>
   <ItemGroup>
-    <None Include=".gitignore" />
+    <Filter Include="Sounds">
+      <UniqueIdentifier>{530e9bf4-a294-43b4-b07d-345b3e25abcc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sounds\Scare">
+      <UniqueIdentifier>{27ee6149-9f99-4254-9cb9-61498154c0e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sounds\Scream">
+      <UniqueIdentifier>{8126a542-8c25-43c7-bf76-07dcd1e8b639}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="C:\Users\cosep\Downloads\laugh1.mp3">
+      <Filter>Sounds\Scare</Filter>
+    </Media>
+    <Media Include="C:\Users\cosep\Downloads\scare1.mp3">
+      <Filter>Sounds\Scare</Filter>
+    </Media>
+    <Media Include="C:\Users\cosep\Downloads\laugh2.mp3">
+      <Filter>Sounds\Scare</Filter>
+    </Media>
+    <Media Include="C:\Users\cosep\Downloads\scare3.mp3">
+      <Filter>Sounds\Scare</Filter>
+    </Media>
+    <Media Include="C:\Users\cosep\Downloads\scream.mp3">
+      <Filter>Sounds\Scream</Filter>
+    </Media>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="main.asm" />
   </ItemGroup>
 </Project>

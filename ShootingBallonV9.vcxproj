@@ -124,10 +124,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <MASM Include="main.asm" />
+    <None Include=".gitignore" />
   </ItemGroup>
   <ItemGroup>
-    <None Include=".gitignore" />
+    <Media Include="C:\Users\cosep\Downloads\laugh1.mp3" />
+    <Media Include="C:\Users\cosep\Downloads\laugh2.mp3" />
+    <Media Include="C:\Users\cosep\Downloads\scare1.mp3" />
+    <Media Include="C:\Users\cosep\Downloads\scare3.mp3" />
+    <Media Include="C:\Users\cosep\Downloads\scream.mp3" />
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="main.asm" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

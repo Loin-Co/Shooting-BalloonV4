@@ -19,6 +19,10 @@ x86/
 *.lastbuildstate
 *.unsuccessfulbuild
 
+# But allow WAV files in Debug folder (for game sounds)
+!Debug/*.wav
+![Dd]ebug/*.wav
+
 ## Build results
 [Bb]in/
 [Oo]bj/

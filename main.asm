@@ -3,7 +3,6 @@
 option casemap:none
 
 ; ============================================================================
-
 ; IT: Welcome to Derry 2025 - BALLOON SHOOTER
 ; Main game file with professional loading screen and themed UI
 ; ============================================================================
@@ -11,6 +10,7 @@ option casemap:none
 ; Windows API includes
 includelib kernel32.lib
 includelib user32.lib
+includelib winmm.lib
 
 ; Function prototypes
 GetStdHandle PROTO STDCALL :DWORD
@@ -24,10 +24,17 @@ SetConsoleCursorInfo PROTO STDCALL :DWORD, :DWORD
 Sleep PROTO STDCALL :DWORD
 ExitProcess PROTO STDCALL :DWORD
 lstrlenA PROTO STDCALL :DWORD
+PlaySoundA PROTO STDCALL :DWORD, :DWORD, :DWORD
+GetTickCount PROTO STDCALL
 
 ; Constants
 STD_OUTPUT_HANDLE equ -11
 STD_INPUT_HANDLE equ -10
+
+; Sound flags for PlaySound
+SND_FILENAME equ 00020000h
+SND_ASYNC equ 00000001h
+SND_NODEFAULT equ 00000002h
 
 ; Standard CGA/VGA Colors (Reference)
 BLACK equ 0
@@ -108,6 +115,22 @@ CONSOLE_CURSOR_INFO ENDS
     maxAmmo DWORD 20             ; Maximum ammo capacity
     balloonsLeft DWORD 4         ; Balloons remaining in level
     currentLevel DWORD 1         ; Current level number
+    
+    ; Sound control variables
+    lastFearLevel DWORD 0        ; Track fear level changes
+    lastScareTime DWORD 0        ; Prevent sound spam
+    
+    ; Sound file paths (MUST BE .WAV FILES - PlaySound API only supports WAV format!)
+    ; Place these WAV files in your Debug folder
+    soundScare1 db "laugh1.wav", 0
+    soundScare2 db "scare1.wav", 0
+    soundScare3 db "laugh2.wav", 0
+    soundScare4 db "scare3.wav", 0
+    soundScream db "scream.wav", 0
+    
+    ; Array of scare sound pointers
+    scareSounds dd offset soundScare1, offset soundScare2, offset soundScare3, offset soundScare4
+    numScareSounds DWORD 4
     
     ; Balloon data (max 10 balloons)
     balloonX SWORD 35, 50, 65, 40, 0, 0, 0, 0, 0, 0
@@ -825,6 +848,70 @@ CenterText PROC uses eax ebx ecx stringOffset:DWORD, yPos:DWORD, colorAttr:WORD
     
     ret
 CenterText ENDP
+
+; ============================================================================
+; SOUND PROCEDURES
+; ============================================================================
+
+PlayRandomScareSound PROC
+    push eax
+    push ebx
+    push ecx
+    push edx
+    
+    ; Check if enough time has passed since last sound (prevent spam)
+    invoke GetTickCount
+    mov ebx, eax
+    sub ebx, lastScareTime
+    cmp ebx, 2000  ; At least 2 seconds between sounds
+    jl skipScareSound
+    
+    ; Update last scare time
+    mov lastScareTime, eax
+    
+    ; Generate pseudo-random index based on tick count
+    invoke GetTickCount
+    xor edx, edx
+    mov ebx, numScareSounds
+    div ebx
+    ; EDX now contains random index (0-3)
+    
+    ; Get sound file pointer
+    shl edx, 2  ; Multiply by 4 (DWORD size)
+    lea ebx, scareSounds
+    add ebx, edx
+    mov eax, [ebx]
+    
+    ; Play sound asynchronously
+    invoke PlaySoundA, eax, 0, SND_FILENAME or SND_ASYNC or SND_NODEFAULT
+    
+skipScareSound:
+    pop edx
+    pop ecx
+    pop ebx
+    pop eax
+    ret
+PlayRandomScareSound ENDP
+
+PlayScreamSound PROC
+    push eax
+    
+    ; Play scream sound (synchronous for dramatic effect)
+    invoke PlaySoundA, offset soundScream, 0, SND_FILENAME or SND_NODEFAULT
+    
+    pop eax
+    ret
+PlayScreamSound ENDP
+
+StopAllSounds PROC
+    push eax
+    
+    ; Stop any playing sounds
+    invoke PlaySoundA, 0, 0, 0
+    
+    pop eax
+    ret
+StopAllSounds ENDP
 
 ; ============================================================================
 ; GAME MODE UI PROCEDURES
@@ -1633,7 +1720,7 @@ collisionLoop:
     cmp eax, 0
     je hitRedBalloon
     
-    ; Hit yellow (trap) - increase fear
+    ; Hit yellow (trap) - increase fear and play scare sound
     mov eax, fearLevel
     add eax, 20
     cmp eax, 100
@@ -1641,6 +1728,9 @@ collisionLoop:
     mov eax, 100
 saveFear:
     mov fearLevel, eax
+    
+    ; Play random scare sound when hitting trap balloon
+    call PlayRandomScareSound
     jmp balloonHit
     
 hitRedBalloon:
@@ -2325,6 +2415,36 @@ doGameMode:
     call DrawArcher
     call DrawArrow
     
+    ; Check for fear level increases and play scare sounds
+    mov eax, fearLevel
+    mov ebx, lastFearLevel
+    cmp eax, ebx
+    jle noFearIncrease
+    
+    ; Fear increased - check if we should play scare sound
+    ; Only play if fear crossed certain thresholds (50%, 75%)
+    cmp eax, 75
+    jge fearHigh75
+    cmp eax, 50
+    jge fearHigh50
+    jmp updateLastFear
+    
+fearHigh75:
+    cmp ebx, 75
+    jge updateLastFear
+    call PlayRandomScareSound
+    jmp updateLastFear
+    
+fearHigh50:
+    cmp ebx, 50
+    jge updateLastFear
+    call PlayRandomScareSound
+    
+updateLastFear:
+    mov lastFearLevel, eax
+    
+noFearIncrease:
+    
     ; Check win/lose conditions
     cmp fearLevel, 100
     jge gameLost
@@ -2337,11 +2457,20 @@ doGameMode:
     jmp gameLoop
 
 gameLost:
-    ; TODO: Show game over screen
+    ; Stop background sounds and play scream
+    call StopAllSounds
+    invoke Sleep, 200
+    call PlayScreamSound
+    invoke Sleep, 1500
+    
+    ; Return to main menu
     mov gameState, STATE_MAIN_MENU
     jmp gameLoop
 
 gameWon:
+    ; Stop all sounds on victory
+    call StopAllSounds
+    
     ; TODO: Show victory screen
     mov gameState, STATE_MAIN_MENU
     jmp gameLoop
@@ -2593,6 +2722,13 @@ startGame:
     mov arrowActive, 0
     mov frameCounter, 0
     
+    ; Reset sound variables
+    mov lastFearLevel, 45
+    mov lastScareTime, 0
+    
+    ; Stop any previous sounds
+    call StopAllSounds
+    
     ; Update level name display
     mov eax, currentLevel
     add al, '0'
@@ -2704,7 +2840,7 @@ shootArrow:
     jmp gameInputDone
 
 noAmmo:
-    ; Increase fear when out of ammo
+    ; Increase fear when out of ammo and play scare sound
     mov eax, fearLevel
     add eax, 5
     cmp eax, 100
@@ -2712,6 +2848,9 @@ noAmmo:
     mov eax, 100
 saveFearNoAmmo:
     mov fearLevel, eax
+    
+    ; Play scare sound when running out of ammo
+    call PlayRandomScareSound
     jmp gameInputDone
 
 gamePause:
@@ -2719,6 +2858,8 @@ gamePause:
     jmp gameInputDone
 
 gameExit:
+    ; Stop all sounds when exiting to main menu
+    call StopAllSounds
     mov gameState, STATE_MAIN_MENU
 
 gameInputDone:
@@ -2756,6 +2897,8 @@ resumeGame:
     jmp pauseInputDone
 
 pauseExit:
+    ; Stop all sounds when exiting to main menu
+    call StopAllSounds
     mov gameState, STATE_MAIN_MENU
 
 pauseInputDone:
