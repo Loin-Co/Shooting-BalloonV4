@@ -102,6 +102,76 @@ CONSOLE_CURSOR_INFO ENDS
     highScore DWORD 1850
     deaths DWORD 42
 
+    ; === NEW GAME MODE VARIABLES ===
+    fearLevel DWORD 45           ; Current fear level (0-100)
+    ammoCount DWORD 7            ; Current ammo
+    maxAmmo DWORD 20             ; Maximum ammo capacity
+    balloonsLeft DWORD 4         ; Balloons remaining in level
+    currentLevel DWORD 1         ; Current level number
+    
+    ; Balloon data (max 10 balloons)
+    balloonX SWORD 35, 50, 65, 40, 0, 0, 0, 0, 0, 0
+    balloonY SWORD 5, 7, 9, 11, 0, 0, 0, 0, 0, 0
+    balloonType BYTE 0, 0, 1, 0, 0, 0, 0, 0, 0, 0  ; 0=Red(safe), 1=Yellow(trap)
+    balloonActive BYTE 1, 1, 1, 1, 0, 0, 0, 0, 0, 0
+    balloonDirX SWORD 1, -1, 1, -1, 0, 0, 0, 0, 0, 0  ; Movement direction
+    
+    ; Arrow data
+    arrowActive BYTE 0           ; Is arrow in flight?
+    arrowX SWORD 0
+    arrowY SWORD 0
+    
+    ; Frame counter for balloon movement
+    frameCounter DWORD 0
+    
+    ; UI Strings for Game Mode
+    uiMenuLabel db "MENU", 0
+    uiScoreLabel db "SCORE", 0
+    uiAmmoLabel db "AMMO", 0
+    uiFearLabel db "FEAR LEVEL", 0
+    uiBalloonsLabel db "BALLOONS", 0
+    uiLogLabel db "LOG", 0
+    
+    ; Level display
+    levelNameDisplay db "LEVEL  1: THE BARRENS", 0
+    
+    ; Score display (updated dynamically)
+    scoreDisplay db "004450", 0
+    
+    ; Ammo visual (lightning bolts)
+    ammoSymbol db 4, 0           ; ASCII diamond/lightning
+    ammoCountDisplay db "x07", 0
+    
+    ; Fear percentage display
+    fearPercentDisplay db "45%", 0
+    fearStatusCalm db "[ CALM ]", 0
+    fearStatusRising db "[ RISING ]", 0
+    fearStatusHigh db "[ HIGH! ]", 0
+    fearStatusPanic db "[ PANIC! ]", 0
+    
+    ; Balloons remaining
+    balloonsDisplay db "4 Left", 0
+    balloonFloating db "Floating...", 0
+    balloonSymbol db 7, 0        ; ASCII bullet/circle for balloon icon
+    
+    ; Log messages (ring buffer of 3 messages)
+    logMsg1 db "> Level Start...", 0
+    logMsg2 db "> Missed Shot!", 0
+    logMsg3 db "> Fear +5%", 0
+    
+    ; Controls display
+    controlsDisplay db "[SPACE]: SHOOT   [ARROWS]: MOVE   [P]: PAUSE", 0
+    
+    ; Wrong balloon indicator
+    wrongBalloonMsg db "@ <--- (Wrong Ball/Trap)", 0
+    
+    ; Arrow character
+    arrowUpChar db '^', 0
+    arrowChar db '|', 0
+    
+    ; Archer display
+    archerDisplay db "A  (Archer)", 0
+
     ; Loading screen strings
     systemHeader db ">_  DERRY MAINFRAME - v1958", 0
     systemTag db "[ SYSTEM ]", 0
@@ -757,6 +827,856 @@ CenterText PROC uses eax ebx ecx stringOffset:DWORD, yPos:DWORD, colorAttr:WORD
 CenterText ENDP
 
 ; ============================================================================
+; GAME MODE UI PROCEDURES
+; ============================================================================
+
+DrawUIBox PROC uses eax ebx ecx xPos:DWORD, yPos:DWORD, boxWidth:DWORD, boxHeight:DWORD
+    LOCAL x:DWORD
+    LOCAL y:DWORD
+    LOCAL i:DWORD
+    
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_BORDER
+    
+    ; Top-left corner
+    mov eax, xPos
+    mov ebx, yPos
+    call SetCursor
+    invoke WriteChar, 218
+    
+    ; Top edge
+    mov i, 1
+topEdge:
+    mov eax, i
+    cmp eax, boxWidth
+    jge topEdgeDone
+    
+    mov eax, xPos
+    add eax, i
+    mov ebx, yPos
+    call SetCursor
+    invoke WriteChar, 196
+    
+    inc i
+    jmp topEdge
+topEdgeDone:
+    
+    ; Top-right corner
+    mov eax, xPos
+    add eax, boxWidth
+    mov ebx, yPos
+    call SetCursor
+    invoke WriteChar, 191
+    
+    ; Side edges
+    mov i, 1
+sideEdges:
+    mov eax, i
+    cmp eax, boxHeight
+    jge sideEdgesDone
+    
+    ; Left edge
+    mov eax, xPos
+    mov ebx, yPos
+    add ebx, i
+    call SetCursor
+    invoke WriteChar, 179
+    
+    ; Right edge
+    mov eax, xPos
+    add eax, boxWidth
+    mov ebx, yPos
+    add ebx, i
+    call SetCursor
+    invoke WriteChar, 179
+    
+    inc i
+    jmp sideEdges
+sideEdgesDone:
+    
+    ; Bottom-left corner
+    mov eax, xPos
+    mov ebx, yPos
+    add ebx, boxHeight
+    call SetCursor
+    invoke WriteChar, 192
+    
+    ; Bottom edge
+    mov i, 1
+bottomEdge:
+    mov eax, i
+    cmp eax, boxWidth
+    jge bottomEdgeDone
+    
+    mov eax, xPos
+    add eax, i
+    mov ebx, yPos
+    add ebx, boxHeight
+    call SetCursor
+    invoke WriteChar, 196
+    
+    inc i
+    jmp bottomEdge
+bottomEdgeDone:
+    
+    ; Bottom-right corner
+    mov eax, xPos
+    add eax, boxWidth
+    mov ebx, yPos
+    add ebx, boxHeight
+    call SetCursor
+    invoke WriteChar, 217
+    
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    ret
+DrawUIBox ENDP
+
+DrawLeftPanel PROC
+    ; Draw MENU box
+    invoke DrawUIBox, 2, 1, 14, 3
+    mov eax, 4
+    mov ebx, 2
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    invoke WriteString, offset uiMenuLabel
+    
+    ; Draw SCORE box
+    invoke DrawUIBox, 2, 4, 14, 3
+    mov eax, 4
+    mov ebx, 5
+    call SetCursor
+    invoke WriteString, offset uiScoreLabel
+    mov eax, 4
+    mov ebx, 6
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_ACCENT
+    invoke WriteString, offset scoreDisplay
+    
+    ; Draw AMMO box
+    invoke DrawUIBox, 2, 7, 14, 4
+    mov eax, 4
+    mov ebx, 8
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    invoke WriteString, offset uiAmmoLabel
+    call DrawAmmoDisplay
+    
+    ; Draw FEAR LEVEL box
+    invoke DrawUIBox, 2, 11, 14, 6
+    mov eax, 4
+    mov ebx, 12
+    call SetCursor
+    invoke WriteString, offset uiFearLabel
+    call DrawFearBar
+    
+    ; Draw BALLOONS box
+    invoke DrawUIBox, 2, 17, 14, 4
+    mov eax, 4
+    mov ebx, 18
+    call SetCursor
+    invoke WriteString, offset uiBalloonsLabel
+    call DrawBalloonsPanel
+    
+    ; Draw LOG box
+    invoke DrawUIBox, 2, 21, 14, 3
+    mov eax, 4
+    mov ebx, 22
+    call SetCursor
+    invoke WriteString, offset uiLogLabel
+    
+    ret
+DrawLeftPanel ENDP
+
+DrawAmmoDisplay PROC
+    LOCAL i:DWORD
+    push eax
+    push ebx
+    push ecx
+    
+    ; Draw lightning bolt symbols (max 10 visible)
+    mov eax, 4
+    mov ebx, 9
+    call SetCursor
+    
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_ACCENT
+    
+    mov ecx, ammoCount
+    cmp ecx, 10
+    jle ammoOk
+    mov ecx, 10
+ammoOk:
+    mov i, 0
+ammoLoop:
+    mov eax, i
+    cmp eax, ecx
+    jge ammoLoopDone
+    
+    invoke WriteChar, 4  ; Diamond character
+    invoke WriteChar, ' '
+    
+    inc i
+    jmp ammoLoop
+ammoLoopDone:
+    
+    ; Display count on next line
+    mov eax, 4
+    mov ebx, 10
+    call SetCursor
+    
+    ; Update ammo count display
+    call UpdateAmmoString
+    invoke WriteString, offset ammoCountDisplay
+    
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    
+    pop ecx
+    pop ebx
+    pop eax
+    ret
+DrawAmmoDisplay ENDP
+
+UpdateAmmoString PROC
+    push eax
+    push ebx
+    push edx
+    
+    mov eax, ammoCount
+    mov ebx, 10
+    xor edx, edx
+    div ebx
+    
+    ; Tens digit
+    add al, '0'
+    mov BYTE PTR [ammoCountDisplay + 1], al
+    
+    ; Ones digit
+    mov eax, edx
+    add al, '0'
+    mov BYTE PTR [ammoCountDisplay + 2], al
+    
+    pop edx
+    pop ebx
+    pop eax
+    ret
+UpdateAmmoString ENDP
+
+DrawFearBar PROC
+    LOCAL blocks:DWORD
+    LOCAL i:DWORD
+    push eax
+    push ebx
+    push ecx
+    
+    ; Update fear percentage display
+    call UpdateFearString
+    
+    ; Display percentage
+    mov eax, 4
+    mov ebx, 13
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_ACCENT
+    invoke WriteString, offset fearPercentDisplay
+    
+    ; Draw progress bar (10 blocks)
+    mov eax, 4
+    mov ebx, 14
+    call SetCursor
+    
+    ; Calculate blocks: fearLevel / 10
+    mov eax, fearLevel
+    mov ebx, 10
+    xor edx, edx
+    div ebx
+    mov blocks, eax
+    
+    mov i, 0
+barLoop:
+    mov eax, i
+    cmp eax, 10
+    jge barDone
+    
+    cmp eax, blocks
+    jge emptyBlock
+    
+    ; Filled block
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_WARNING
+    invoke WriteChar, 219  ; Solid block
+    jmp nextBlock
+    
+emptyBlock:
+    invoke SetConsoleTextAttribute, hConsoleOutput, DARKGRAY
+    invoke WriteChar, 176  ; Light shade
+    
+nextBlock:
+    inc i
+    jmp barLoop
+    
+barDone:
+    ; Display status
+    mov eax, 4
+    mov ebx, 15
+    call SetCursor
+    
+    ; Determine status based on fear level
+    mov eax, fearLevel
+    cmp eax, 75
+    jge panicStatus
+    cmp eax, 50
+    jge highStatus
+    cmp eax, 25
+    jge risingStatus
+    
+    ; Calm
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    invoke WriteString, offset fearStatusCalm
+    jmp fearStatusDone
+    
+risingStatus:
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_ACCENT
+    invoke WriteString, offset fearStatusRising
+    jmp fearStatusDone
+    
+highStatus:
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_WARNING
+    invoke WriteString, offset fearStatusHigh
+    jmp fearStatusDone
+    
+panicStatus:
+    invoke SetConsoleTextAttribute, hConsoleOutput, 4Fh  ; Blinking red
+    invoke WriteString, offset fearStatusPanic
+    
+fearStatusDone:
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    
+    pop ecx
+    pop ebx
+    pop eax
+    ret
+DrawFearBar ENDP
+
+UpdateFearString PROC
+    push eax
+    push ebx
+    push edx
+    
+    mov eax, fearLevel
+    
+    ; Handle 100%
+    cmp eax, 100
+    jne notHundred
+    mov BYTE PTR [fearPercentDisplay], '1'
+    mov BYTE PTR [fearPercentDisplay + 1], '0'
+    mov BYTE PTR [fearPercentDisplay + 2], '0'
+    jmp fearStringDone
+    
+notHundred:
+    ; Tens digit
+    mov ebx, 10
+    xor edx, edx
+    div ebx
+    
+    cmp eax, 0
+    je noTens
+    add al, '0'
+    mov BYTE PTR [fearPercentDisplay], al
+    jmp getOnes
+    
+noTens:
+    mov BYTE PTR [fearPercentDisplay], ' '
+    
+getOnes:
+    mov eax, edx
+    add al, '0'
+    mov BYTE PTR [fearPercentDisplay + 1], al
+    mov BYTE PTR [fearPercentDisplay + 2], '%'
+    
+fearStringDone:
+    pop edx
+    pop ebx
+    pop eax
+    ret
+UpdateFearString ENDP
+
+DrawBalloonsPanel PROC
+    push eax
+    push ebx
+    
+    mov eax, 4
+    mov ebx, 19
+    call SetCursor
+    
+    ; Update balloons left string
+    call UpdateBalloonsString
+    
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_ACCENT
+    invoke WriteString, offset balloonsDisplay
+    
+    mov eax, 4
+    mov ebx, 20
+    call SetCursor
+    
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_BALLOON_SAFE
+    invoke WriteChar, 7  ; Bullet/circle
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    invoke WriteChar, ' '
+    invoke WriteString, offset balloonFloating
+    
+    pop ebx
+    pop eax
+    ret
+DrawBalloonsPanel ENDP
+
+UpdateBalloonsString PROC
+    push eax
+    
+    mov eax, balloonsLeft
+    add al, '0'
+    mov BYTE PTR [balloonsDisplay], al
+    
+    pop eax
+    ret
+UpdateBalloonsString ENDP
+
+UpdateScoreDisplay PROC
+    push eax
+    push ebx
+    push ecx
+    push edx
+    push edi
+    
+    mov eax, score
+    mov ebx, 10
+    mov ecx, 5  ; 6 digits, process from right to left
+    
+    lea edi, scoreDisplay
+    add edi, 5  ; Start from last digit
+    
+scoreDigitLoop:
+    xor edx, edx
+    div ebx
+    add dl, '0'
+    mov [edi], dl
+    dec edi
+    dec ecx
+    cmp ecx, 0
+    jge scoreDigitLoop
+    
+    pop edi
+    pop edx
+    pop ecx
+    pop ebx
+    pop eax
+    ret
+UpdateScoreDisplay ENDP
+
+DrawLogMessages PROC
+    push eax
+    push ebx
+    
+    mov eax, 3
+    mov ebx, 22
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    invoke WriteChar, '>'
+    
+    mov eax, 4
+    call SetCursor
+    invoke WriteString, offset logMsg1
+    
+    pop ebx
+    pop eax
+    ret
+DrawLogMessages ENDP
+
+DrawGamePlayArea PROC
+    ; Draw main game box (right side)
+    invoke DrawUIBox, 17, 1, 61, 21
+    
+    ; Draw level name at top
+    mov eax, 19
+    mov ebx, 2
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_BORDER
+    invoke WriteString, offset levelNameDisplay
+    
+    ; Draw controls at bottom
+    mov eax, 19
+    mov ebx, 22
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_BTN_NORMAL
+    invoke WriteString, offset controlsDisplay
+    
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    ret
+DrawGamePlayArea ENDP
+
+DrawGameBalloons PROC
+    LOCAL i:DWORD
+    push eax
+    push ebx
+    push ecx
+    push esi
+    
+    mov i, 0
+balloonLoop:
+    mov eax, i
+    cmp eax, 10
+    jge balloonsDone
+    
+    ; Check if balloon is active
+    lea esi, balloonActive
+    add esi, i
+    movzx ecx, BYTE PTR [esi]
+    cmp ecx, 0
+    je nextBalloon
+    
+    ; Get balloon position
+    mov eax, i
+    shl eax, 1  ; Multiply by 2 for SWORD
+    lea esi, balloonX
+    add esi, eax
+    movsx ebx, SWORD PTR [esi]
+    
+    lea esi, balloonY
+    add esi, eax
+    movsx eax, SWORD PTR [esi]
+    
+    ; Draw at position
+    push eax
+    mov eax, ebx
+    pop ebx
+    call SetCursor
+    
+    ; Determine color based on type
+    push eax
+    mov eax, i
+    lea esi, balloonType
+    add esi, eax
+    movzx eax, BYTE PTR [esi]
+    pop ecx
+    
+    cmp eax, 0
+    je redBalloon
+    
+    ; Yellow/trap balloon
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_BALLOON_TRAP
+    invoke WriteChar, '('
+    invoke WriteChar, 'O'
+    invoke WriteChar, ')'
+    jmp balloonDrawn
+    
+redBalloon:
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_BALLOON_SAFE
+    invoke WriteChar, '('
+    invoke WriteChar, 'O'
+    invoke WriteChar, ')'
+    
+balloonDrawn:
+    ; Draw label below balloon
+    push ebx
+    mov eax, ecx
+    inc ebx
+    call SetCursor
+    
+    push eax
+    mov eax, i
+    lea esi, balloonType
+    add esi, eax
+    movzx eax, BYTE PTR [esi]
+    pop ecx
+    
+    cmp eax, 0
+    je redLabel
+    
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_ACCENT
+    invoke WriteString, offset wrongBalloonMsg
+    jmp labelDrawn
+    
+redLabel:
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_BALLOON_SAFE
+    invoke WriteString, offset balloonChar
+    
+labelDrawn:
+    pop ebx
+    
+nextBalloon:
+    inc i
+    jmp balloonLoop
+    
+balloonsDone:
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    
+    pop esi
+    pop ecx
+    pop ebx
+    pop eax
+    ret
+DrawGameBalloons ENDP
+
+DrawArcher PROC
+    push eax
+    push ebx
+    
+    ; Draw archer position
+    movsx eax, playerX
+    movsx ebx, playerY
+    call SetCursor
+    
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_PLAYER
+    invoke WriteString, offset archerDisplay
+    
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    
+    pop ebx
+    pop eax
+    ret
+DrawArcher ENDP
+
+DrawArrow PROC
+    push eax
+    push ebx
+    
+    ; Check if arrow is active
+    cmp arrowActive, 0
+    je noArrow
+    
+    movsx eax, arrowX
+    movsx ebx, arrowY
+    call SetCursor
+    
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_PLAYER
+    invoke WriteChar, '^'
+    
+    ; Draw tail
+    inc ebx
+    call SetCursor
+    invoke WriteChar, '|'
+    
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
+    
+noArrow:
+    pop ebx
+    pop eax
+    ret
+DrawArrow ENDP
+
+UpdateBalloons PROC
+    LOCAL i:DWORD
+    push eax
+    push ebx
+    push ecx
+    push esi
+    
+    ; Only update every 3 frames
+    inc frameCounter
+    mov eax, frameCounter
+    and eax, 3
+    cmp eax, 0
+    jne updateDone
+    
+    mov i, 0
+updateLoop:
+    mov eax, i
+    cmp eax, 10
+    jge updateDone
+    
+    ; Check if balloon is active
+    lea esi, balloonActive
+    add esi, i
+    movzx ecx, BYTE PTR [esi]
+    cmp ecx, 0
+    je nextUpdate
+    
+    ; Get balloon X position
+    mov eax, i
+    shl eax, 1
+    lea esi, balloonX
+    add esi, eax
+    movsx ebx, SWORD PTR [esi]
+    
+    ; Get direction
+    lea esi, balloonDirX
+    add esi, eax
+    movsx ecx, SWORD PTR [esi]
+    
+    ; Update position
+    add ebx, ecx
+    
+    ; Check boundaries (18-75 for game area)
+    cmp ebx, 20
+    jle reverseBalloon
+    cmp ebx, 75
+    jge reverseBalloon
+    jmp saveBalloonX
+    
+reverseBalloon:
+    neg ecx
+    mov eax, i
+    shl eax, 1
+    lea esi, balloonDirX
+    add esi, eax
+    mov SWORD PTR [esi], cx
+    
+saveBalloonX:
+    mov eax, i
+    shl eax, 1
+    lea esi, balloonX
+    add esi, eax
+    mov SWORD PTR [esi], bx
+    
+nextUpdate:
+    inc i
+    jmp updateLoop
+    
+updateDone:
+    pop esi
+    pop ecx
+    pop ebx
+    pop eax
+    ret
+UpdateBalloons ENDP
+
+UpdateArrow PROC
+    push eax
+    push ebx
+    
+    cmp arrowActive, 0
+    je arrowDone
+    
+    ; Move arrow up
+    movsx ebx, arrowY
+    dec ebx
+    
+    ; Check if out of bounds
+    cmp ebx, 3
+    jle deactivateArrow
+    
+    mov arrowY, bx
+    
+    ; Check collision with balloons
+    call CheckArrowCollision
+    jmp arrowDone
+    
+deactivateArrow:
+    mov arrowActive, 0
+    
+arrowDone:
+    pop ebx
+    pop eax
+    ret
+UpdateArrow ENDP
+
+CheckArrowCollision PROC
+    LOCAL i:DWORD
+    push eax
+    push ebx
+    push ecx
+    push esi
+    
+    movsx eax, arrowX
+    movsx ebx, arrowY
+    
+    mov i, 0
+collisionLoop:
+    mov ecx, i
+    cmp ecx, 10
+    jge collisionDone
+    
+    ; Check if balloon is active
+    lea esi, balloonActive
+    add esi, i
+    movzx ecx, BYTE PTR [esi]
+    cmp ecx, 0
+    je nextCollision
+    
+    ; Get balloon position
+    push eax
+    push ebx
+    
+    mov eax, i
+    shl eax, 1
+    lea esi, balloonX
+    add esi, eax
+    movsx ecx, SWORD PTR [esi]
+    
+    lea esi, balloonY
+    add esi, eax
+    movsx edx, SWORD PTR [esi]
+    
+    pop ebx
+    pop eax
+    
+    ; Check X collision (within 2 chars)
+    push eax
+    sub eax, ecx
+    cmp eax, -2
+    jl nextCollision
+    cmp eax, 2
+    jg nextCollision
+    pop eax
+    
+    ; Check Y collision (exact)
+    cmp ebx, edx
+    jne nextCollision
+    
+    ; HIT!
+    push eax
+    mov eax, i
+    lea esi, balloonActive
+    add esi, eax
+    mov BYTE PTR [esi], 0
+    
+    ; Check balloon type
+    lea esi, balloonType
+    add esi, eax
+    movzx eax, BYTE PTR [esi]
+    
+    cmp eax, 0
+    je hitRedBalloon
+    
+    ; Hit yellow (trap) - increase fear
+    mov eax, fearLevel
+    add eax, 20
+    cmp eax, 100
+    jle saveFear
+    mov eax, 100
+saveFear:
+    mov fearLevel, eax
+    jmp balloonHit
+    
+hitRedBalloon:
+    ; Hit red (safe) - add score, decrease fear
+    mov eax, score
+    add eax, 10
+    mov score, eax
+    
+    mov eax, fearLevel
+    sub eax, 5
+    cmp eax, 0
+    jge saveFear2
+    mov eax, 0
+saveFear2:
+    mov fearLevel, eax
+    
+    dec balloonsLeft
+    
+balloonHit:
+    pop eax
+    mov arrowActive, 0
+    jmp collisionDone
+    
+nextCollision:
+    inc i
+    jmp collisionLoop
+    
+collisionDone:
+    pop esi
+    pop ecx
+    pop ebx
+    pop eax
+    ret
+CheckArrowCollision ENDP
+
+; ============================================================================
 ; ClearInnerBox - Clears the area inside the border
 ; ============================================================================
 ClearInnerBox PROC
@@ -798,7 +1718,7 @@ ClearInnerBox ENDP
 RunScrollAnimation PROC
     LOCAL i:DWORD
     LOCAL currentY:SDWORD
-    LOCAL frameCounter:DWORD
+    LOCAL frameCount:DWORD
     
     push eax
     push ebx
@@ -806,7 +1726,7 @@ RunScrollAnimation PROC
     push edx
     push esi
     
-    mov frameCounter, 0
+    mov frameCount, 0
 
 animLoop:
     ; Non-blocking input check
@@ -1386,38 +2306,44 @@ level3_draw:
 
 doGameMode:
     call ClearScreen
-    call DrawBorder
-
-    mov eax, 30
-    mov ebx, 1
-    call SetCursor
-    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_BORDER
-    invoke WriteString, offset gameTitle
-    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
-
-    mov eax, 5
-    mov ebx, 3
-    call SetCursor
-    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_ACCENT
-    invoke WriteString, offset scoreMsg
-    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
-
-    mov eax, 60
-    mov ebx, 3
-    call SetCursor
-    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_ACCENT
-    invoke WriteString, offset balloonMsg
-    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
-
-    movsx eax, playerX
-    movsx ebx, playerY
-    call SetCursor
-    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_PLAYER
-    invoke WriteString, offset playerMsg
-    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
-
-    call DrawBalloons
+    
+    ; Update displays
+    call UpdateScoreDisplay
+    call UpdateAmmoString
+    call UpdateFearString
+    call UpdateBalloonsString
+    
+    ; Draw all UI elements
+    call DrawLeftPanel
+    call DrawGamePlayArea
+    call DrawLogMessages
+    
+    ; Update and draw game objects
+    call UpdateBalloons
+    call UpdateArrow
+    call DrawGameBalloons
+    call DrawArcher
+    call DrawArrow
+    
+    ; Check win/lose conditions
+    cmp fearLevel, 100
+    jge gameLost
+    
+    cmp balloonsLeft, 0
+    jle gameWon
+    
+    ; Continue game
     call GetGameInput
+    jmp gameLoop
+
+gameLost:
+    ; TODO: Show game over screen
+    mov gameState, STATE_MAIN_MENU
+    jmp gameLoop
+
+gameWon:
+    ; TODO: Show victory screen
+    mov gameState, STATE_MAIN_MENU
     jmp gameLoop
 
 ; ============================================================================
@@ -1523,7 +2449,7 @@ menuSelect:
     je selectInstr
     cmp eax, 2
     je selectExit
-    jmp menuInputDone
+    jmp waitMenuKey
 
 selectStart:
     ; Go to level select instead of directly to game
@@ -1613,17 +2539,65 @@ levelSelect:
 
 setLevel1:
     mov balloonCount, 5
+    ; Initialize level 1 balloons
+    mov balloonsLeft, 4
+    mov currentLevel, 1
+    
+    ; Setup balloons
+    mov SWORD PTR [balloonX + 0], 35
+    mov SWORD PTR [balloonX + 2], 50
+    mov SWORD PTR [balloonX + 4], 65
+    mov SWORD PTR [balloonX + 6], 40
+    
+    mov SWORD PTR [balloonY + 0], 5
+    mov SWORD PTR [balloonY + 2], 7
+    mov SWORD PTR [balloonY + 4], 9
+    mov SWORD PTR [balloonY + 6], 11
+    
+    mov BYTE PTR [balloonType + 0], 0
+    mov BYTE PTR [balloonType + 1], 0
+    mov BYTE PTR [balloonType + 2], 1
+    mov BYTE PTR [balloonType + 3], 0
+    
+    mov BYTE PTR [balloonActive + 0], 1
+    mov BYTE PTR [balloonActive + 1], 1
+    mov BYTE PTR [balloonActive + 2], 1
+    mov BYTE PTR [balloonActive + 3], 1
+    
+    mov SWORD PTR [balloonDirX + 0], 1
+    mov SWORD PTR [balloonDirX + 2], -1
+    mov SWORD PTR [balloonDirX + 4], 1
+    mov SWORD PTR [balloonDirX + 6], -1
+    
     jmp startGame
+
 setLevel2:
     mov balloonCount, 8
+    mov balloonsLeft, 6
+    mov currentLevel, 2
+    ; Similar initialization for level 2
     jmp startGame
+    
 setLevel3:
     mov balloonCount, 10
+    mov balloonsLeft, 8
+    mov currentLevel,  3
+    ; Similar initialization for level 3
 
 startGame:
     mov score, 0
     mov playerX, 40
     mov playerY, 20
+    mov fearLevel, 45
+    mov ammoCount, 7
+    mov arrowActive, 0
+    mov frameCounter, 0
+    
+    ; Update level name display
+    mov eax, currentLevel
+    add al, '0'
+    mov BYTE PTR [levelNameDisplay + 7], al
+    
     mov gameState, STATE_GAME_MODE
     jmp levelInputDone
 
@@ -1671,6 +2645,9 @@ GetGameInput PROC
     cmp eax, 27h
     je moveRight
 
+    cmp eax, 20h
+    je shootArrow
+
     cmp eax, 50h
     je gamePause
 
@@ -1680,27 +2657,61 @@ GetGameInput PROC
     jmp gameInputDone
 
 moveUp:
-    cmp playerY, 5
+    movsx ebx, playerY
+    cmp ebx, 5
     jle gameInputDone
     dec playerY
     jmp gameInputDone
 
 moveDown:
-    cmp playerY, 23
+    movsx ebx, playerY
+    cmp ebx, 20
     jge gameInputDone
     inc playerY
     jmp gameInputDone
 
 moveLeft:
-    cmp playerX, 2
+    movsx eax, playerX
+    cmp eax, 20
     jle gameInputDone
     sub playerX, 2
     jmp gameInputDone
 
 moveRight:
-    cmp playerX, 70
+    movsx eax, playerX
+    cmp eax, 65
     jge gameInputDone
     add playerX, 2
+    jmp gameInputDone
+
+shootArrow:
+    ; Check if arrow is already active
+    cmp arrowActive, 1
+    je gameInputDone
+    
+    ; Check if we have ammo
+    cmp ammoCount, 0
+    jle noAmmo
+    
+    ; Fire arrow
+    mov arrowActive, 1
+    movsx eax, playerX
+    mov arrowX, ax
+    movsx eax, playerY
+    dec eax
+    mov arrowY, ax
+    dec ammoCount
+    jmp gameInputDone
+
+noAmmo:
+    ; Increase fear when out of ammo
+    mov eax, fearLevel
+    add eax, 5
+    cmp eax, 100
+    jle saveFearNoAmmo
+    mov eax, 100
+saveFearNoAmmo:
+    mov fearLevel, eax
     jmp gameInputDone
 
 gamePause:
