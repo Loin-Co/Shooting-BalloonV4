@@ -1,0 +1,39 @@
+## Visual Studio
+.vs/
+*.user
+*.suo
+*.sln.docstates
+Debug/
+Release/
+x64/
+x86/
+[Dd]ebug/
+[Rr]elease/
+*.obj
+*.exe
+*.pdb
+*.ilk
+*.log
+*.tlog
+*.idb
+*.lastbuildstate
+*.unsuccessfulbuild
+
+## Build results
+[Bb]in/
+[Oo]bj/
+
+## Visual Studio profiler
+*.psess
+*.vsp
+*.vspx
+
+## Visual Studio cache/options directory
+.vs/
+
+## Visual Studio Version 16
+.vs/
+
+## Visual Studio code coverage results
+*.coverage
+*.coveragexml
