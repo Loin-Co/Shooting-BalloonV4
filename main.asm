@@ -67,6 +67,7 @@ STATE_GAME_MODE equ 3
 STATE_INSTRUCTIONS equ 4
 STATE_QUIT equ 5
 STATE_PAUSED equ 6
+STATE_GAME_OVER equ 7
 
 ; Structures
 COORD STRUCT
@@ -115,6 +116,7 @@ CONSOLE_CURSOR_INFO ENDS
     maxAmmo DWORD 20             ; Maximum ammo capacity
     balloonsLeft DWORD 4         ; Balloons remaining in level
     currentLevel DWORD 1         ; Current level number
+    gameOverReason DWORD 0       ; 0=OutOfAmmo, 1=FearDeath
     
     ; Sound control variables
     lastFearLevel DWORD 0        ; Track fear level changes
@@ -291,6 +293,15 @@ CONSOLE_CURSOR_INFO ENDS
     pressEnterMsg db "Press ENTER to select, ESC to go back", 0
     pressAnyKeyMsg db "Press any key to continue...", 0
     borderLine db "================================================================================", 0
+
+    ; Game Over messages
+    gameOverTitle db "G A M E   O V E R", 0
+    outOfAmmoMsg db "OUT OF AMMO!", 0
+    outOfAmmoSub db "You ran out of arrows to fight IT...", 0
+    fearDeathMsg db "FEAR OVERWHELMED YOU!", 0
+    fearDeathSub db "The entity consumed your sanity...", 0
+    finalScoreMsg db "FINAL SCORE", 0
+    returnMenuMsg db "Press ENTER to return to Main Menu", 0
 
     ; ==================================================
     ; SCROLLING TEXT DATA
@@ -826,6 +837,7 @@ DrawBalloons ENDP
 ; ============================================================================
 ; CenterText - Centers a string at a given Y position
 ; ============================================================================
+
 CenterText PROC uses eax ebx ecx stringOffset:DWORD, yPos:DWORD, colorAttr:WORD
     LOCAL len:DWORD
     LOCAL xPos:DWORD
@@ -1363,7 +1375,7 @@ DrawLogMessages PROC
     mov ebx, 22
     call SetCursor
     invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
-    invoke WriteChar, '>'
+    invoke WriteChar, '>';
     
     mov eax, 4
     call SetCursor
@@ -1553,13 +1565,6 @@ UpdateBalloons PROC
     push ecx
     push esi
     
-    ; Only update every 3 frames
-    inc frameCounter
-    mov eax, frameCounter
-    and eax, 3
-    cmp eax, 0
-    jne updateDone
-    
     mov i, 0
 updateLoop:
     mov eax, i
@@ -1588,7 +1593,7 @@ updateLoop:
     ; Update position
     add ebx, ecx
     
-    ; Check boundaries (18-75 for game area)
+    ; Check boundaries (20-75 for game area)
     cmp ebx, 20
     jle reverseBalloon
     cmp ebx, 75
@@ -1635,7 +1640,7 @@ UpdateArrow PROC
     
     ; Check if out of bounds
     cmp ebx, 3
-    jle deactivateArrow
+    jle arrowMissed
     
     mov arrowY, bx
     
@@ -1643,8 +1648,21 @@ UpdateArrow PROC
     call CheckArrowCollision
     jmp arrowDone
     
-deactivateArrow:
+arrowMissed:
+    ; Arrow went out of bounds (missed)
     mov arrowActive, 0
+    
+    ; Increase fear
+    mov eax, fearLevel
+    add eax, 5
+    cmp eax, 100
+    jle saveFearMiss
+    mov eax, 100
+saveFearMiss:
+    mov fearLevel, eax
+    
+    ; Play scare sound for miss
+    call PlayRandomScareSound
     
 arrowDone:
     pop ebx
@@ -1654,13 +1672,20 @@ UpdateArrow ENDP
 
 CheckArrowCollision PROC
     LOCAL i:DWORD
+    LOCAL balloonXPos:DWORD
+    LOCAL balloonYPos:DWORD
+    LOCAL arrowXPos:DWORD
+    LOCAL arrowYPos:DWORD
     push eax
     push ebx
     push ecx
+    push edx
     push esi
     
     movsx eax, arrowX
     movsx ebx, arrowY
+    mov arrowXPos, eax
+    mov arrowYPos, ebx
     
     mov i, 0
 collisionLoop:
@@ -1671,42 +1696,42 @@ collisionLoop:
     ; Check if balloon is active
     lea esi, balloonActive
     add esi, i
-    movzx ecx, BYTE PTR [esi]
-    cmp ecx, 0
+    movzx eax, BYTE PTR [esi]
+    cmp eax, 0
     je nextCollision
     
     ; Get balloon position
-    push eax
-    push ebx
-    
     mov eax, i
     shl eax, 1
     lea esi, balloonX
     add esi, eax
-    movsx ecx, SWORD PTR [esi]
+    movsx ebx, SWORD PTR [esi]
+    mov balloonXPos, ebx
     
     lea esi, balloonY
     add esi, eax
-    movsx edx, SWORD PTR [esi]
+    movsx ebx, SWORD PTR [esi]
+    mov balloonYPos, ebx
     
-    pop ebx
-    pop eax
-    
-    ; Check X collision (within 2 chars)
-    push eax
-    sub eax, ecx
-    cmp eax, -2
-    jl nextCollision
-    cmp eax, 2
-    jg nextCollision
-    pop eax
-    
-    ; Check Y collision (exact)
-    cmp ebx, edx
+    ; Check collision: Y must match exactly, X must be within 1 of balloon center
+    mov eax, arrowYPos
+    cmp eax, balloonYPos
     jne nextCollision
     
-    ; HIT!
-    push eax
+    ; Check X collision (arrow must be within 1 unit of balloon X)
+    mov eax, arrowXPos
+    sub eax, balloonXPos
+    
+    ; If difference is more than 1 in either direction, no hit
+    cmp eax, -1
+    jl nextCollision
+    cmp eax, 1
+    jg nextCollision
+    
+    ; HIT! Deactivate arrow
+    mov arrowActive, 0
+    
+    ; Deactivate balloon
     mov eax, i
     lea esi, balloonActive
     add esi, eax
@@ -1731,7 +1756,7 @@ saveFear:
     
     ; Play random scare sound when hitting trap balloon
     call PlayRandomScareSound
-    jmp balloonHit
+    jmp collisionDone
     
 hitRedBalloon:
     ; Hit red (safe) - add score, decrease fear
@@ -1748,10 +1773,6 @@ saveFear2:
     mov fearLevel, eax
     
     dec balloonsLeft
-    
-balloonHit:
-    pop eax
-    mov arrowActive, 0
     jmp collisionDone
     
 nextCollision:
@@ -1760,6 +1781,7 @@ nextCollision:
     
 collisionDone:
     pop esi
+    pop edx
     pop ecx
     pop ebx
     pop eax
@@ -1767,8 +1789,10 @@ collisionDone:
 CheckArrowCollision ENDP
 
 ; ============================================================================
+
 ; ClearInnerBox - Clears the area inside the border
 ; ============================================================================
+
 ClearInnerBox PROC
     LOCAL row:DWORD
     LOCAL coord:DWORD
@@ -1803,8 +1827,10 @@ clearDone:
 ClearInnerBox ENDP
 
 ; ============================================================================
+
 ; RunScrollAnimation - Star Wars-style scrolling text
 ; ============================================================================
+
 RunScrollAnimation PROC
     LOCAL i:DWORD
     LOCAL currentY:SDWORD
@@ -1942,6 +1968,9 @@ gameLoop:
 
     cmp eax, STATE_PAUSED
     je doPaused
+
+    cmp eax, STATE_GAME_OVER
+    je doGameOver
 
     cmp eax, STATE_QUIT
     je exitProgram
@@ -2212,7 +2241,8 @@ doLevelSelect:
     invoke WriteChar, ' '
     invoke WriteChar, ' '
 
-    ; Draw divider line under header
+
+    ; Draw divider under header
     mov eax, 3
     mov ebx, 3
     call SetCursor
@@ -2415,56 +2445,31 @@ doGameMode:
     call DrawArcher
     call DrawArrow
     
-    ; Check for fear level increases and play scare sounds
-    mov eax, fearLevel
-    mov ebx, lastFearLevel
-    cmp eax, ebx
-    jle noFearIncrease
-    
-    ; Fear increased - check if we should play scare sound
-    ; Only play if fear crossed certain thresholds (50%, 75%)
-    cmp eax, 75
-    jge fearHigh75
-    cmp eax, 50
-    jge fearHigh50
-    jmp updateLastFear
-    
-fearHigh75:
-    cmp ebx, 75
-    jge updateLastFear
-    call PlayRandomScareSound
-    jmp updateLastFear
-    
-fearHigh50:
-    cmp ebx, 50
-    jge updateLastFear
-    call PlayRandomScareSound
-    
-updateLastFear:
-    mov lastFearLevel, eax
-    
-noFearIncrease:
-    
     ; Check win/lose conditions
     cmp fearLevel, 100
-    jge gameLost
+    jge gameLostFear
     
     cmp balloonsLeft, 0
     jle gameWon
     
+    ; Check out of ammo (game over)
+    cmp ammoCount, 0
+    jne continueGame
+    
+    ; Out of ammo - game over
+    mov gameOverReason, 0
+    mov gameState, STATE_GAME_OVER
+    jmp gameLoop
+
+continueGame:
     ; Continue game
     call GetGameInput
     jmp gameLoop
 
-gameLost:
-    ; Stop background sounds and play scream
-    call StopAllSounds
-    invoke Sleep, 200
-    call PlayScreamSound
-    invoke Sleep, 1500
-    
-    ; Return to main menu
-    mov gameState, STATE_MAIN_MENU
+gameLostFear:
+    ; Fear reached 100
+    mov gameOverReason, 1
+    mov gameState, STATE_GAME_OVER
     jmp gameLoop
 
 gameWon:
@@ -2514,6 +2519,61 @@ doPaused:
     invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN
 
     call GetPauseInput
+    jmp gameLoop
+
+; ============================================================================
+
+; GAME OVER STATE
+; ============================================================================
+
+doGameOver:
+    call ClearScreen
+    call DrawASCIIBorder
+    
+    ; Draw game over title
+    invoke CenterText, offset gameOverTitle, 3, THEME_BORDER
+    
+    ; Check reason for game over
+    mov eax, gameOverReason
+    cmp eax, 0
+    je showOutOfAmmo
+    
+    ; Fear death screen
+    invoke CenterText, offset fearDeathMsg, 6, THEME_WARNING
+    invoke CenterText, offset fearDeathSub, 7, THEME_TEXT_MAIN
+    jmp showScore
+    
+showOutOfAmmo:
+    invoke CenterText, offset outOfAmmoMsg, 6, THEME_WARNING
+    invoke CenterText, offset outOfAmmoSub, 7, THEME_TEXT_MAIN
+    
+showScore:
+    mov eax, 30
+    mov ebx, 10
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_ACCENT
+    invoke WriteString, offset finalScoreMsg
+    
+    ; Update and display final score
+    mov eax, 30
+    mov ebx, 11
+    call SetCursor
+    call UpdateScoreDisplay
+    invoke WriteString, offset scoreDisplay
+    
+    ; Return to menu prompt
+    mov eax, 15
+    mov ebx, 15
+    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_BTN_NORMAL
+    invoke WriteString, offset returnMenuMsg
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_MAIN    
+    invoke Sleep, 500
+    call WaitForKey
+    
+    ; Return to main menu
+    mov gameState, STATE_MAIN_MENU
+    mov menuSelection, 0
     jmp gameLoop
 
 ; ============================================================================
@@ -2720,7 +2780,6 @@ startGame:
     mov fearLevel, 45
     mov ammoCount, 7
     mov arrowActive, 0
-    mov frameCounter, 0
     
     ; Reset sound variables
     mov lastFearLevel, 45
@@ -2825,9 +2884,9 @@ shootArrow:
     cmp arrowActive, 1
     je gameInputDone
     
-    ; Check if we have ammo
+    ; Check if we have ammo BEFORE firing
     cmp ammoCount, 0
-    jle noAmmo
+    jle gameInputDone
     
     ; Fire arrow
     mov arrowActive, 1
@@ -2837,20 +2896,13 @@ shootArrow:
     dec eax
     mov arrowY, ax
     dec ammoCount
-    jmp gameInputDone
-
-noAmmo:
-    ; Increase fear when out of ammo and play scare sound
-    mov eax, fearLevel
-    add eax, 5
-    cmp eax, 100
-    jle saveFearNoAmmo
-    mov eax, 100
-saveFearNoAmmo:
-    mov fearLevel, eax
     
-    ; Play scare sound when running out of ammo
-    call PlayRandomScareSound
+    ; Check if we JUST ran out of ammo (now at 0)
+    cmp ammoCount, 0
+    jne gameInputDone
+    
+    ; Out of ammo - play scream sound
+    call PlayScreamSound
     jmp gameInputDone
 
 gamePause:
