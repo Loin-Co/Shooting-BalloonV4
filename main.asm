@@ -117,6 +117,7 @@ CONSOLE_CURSOR_INFO ENDS
     balloonsLeft DWORD 4         ; Balloons remaining in level
     currentLevel DWORD 1         ; Current level number
     gameOverReason DWORD 0       ; 0=OutOfAmmo, 1=FearDeath
+    lastAmmoCount DWORD 7        ; Track ammo from last frame
     
     ; Sound control variables
     lastFearLevel DWORD 0        ; Track fear level changes
@@ -2183,11 +2184,7 @@ menu_stats:
     mov eax, 36
     mov ebx, 19
     call SetCursor
-    invoke WriteChar, '|'
-
-    mov eax, 40
-    mov ebx, 19
-    call SetCursor
+    invoke SetConsoleTextAttribute, hConsoleOutput, THEME_TEXT_ACCENT
     invoke WriteString, offset menuDeaths
 
     ; Version and controls at bottom
@@ -2452,18 +2449,32 @@ doGameMode:
     cmp balloonsLeft, 0
     jle gameWon
     
-    ; Check out of ammo (game over)
-    cmp ammoCount, 0
-    jne continueGame
+    ; Get player input FIRST (before checking ammo game over)
+    call GetGameInput
     
-    ; Out of ammo - game over
-    mov gameOverReason, 0
-    mov gameState, STATE_GAME_OVER
+    ; Check if ammo just became 0 (was > 0 last frame, now is 0)
+    mov eax, lastAmmoCount
+    cmp eax, 0
+    jle stillOutOfAmmo
+    
+    ; We had ammo last frame, check if we ran out this frame
+    cmp ammoCount, 0
+    jne stillHaveAmmo
+    
+    ; We just ran out of ammo - end game after this frame renders
+    mov lastAmmoCount, 0
+    jmp gameLoop
+    
+stillHaveAmmo:
+    ; Still have ammo - update tracking and continue
+    mov eax, ammoCount
+    mov lastAmmoCount, eax
     jmp gameLoop
 
-continueGame:
-    ; Continue game
-    call GetGameInput
+stillOutOfAmmo:
+    ; Already out of ammo - trigger game over
+    mov gameOverReason, 0
+    mov gameState, STATE_GAME_OVER
     jmp gameLoop
 
 gameLostFear:
@@ -2571,7 +2582,8 @@ showScore:
     invoke Sleep, 500
     call WaitForKey
     
-    ; Return to main menu
+    ; Delay before returning to menu
+    invoke Sleep, 50
     mov gameState, STATE_MAIN_MENU
     mov menuSelection, 0
     jmp gameLoop
@@ -2779,6 +2791,7 @@ startGame:
     mov playerY, 20
     mov fearLevel, 45
     mov ammoCount, 7
+    mov lastAmmoCount, 7
     mov arrowActive, 0
     
     ; Reset sound variables
@@ -2899,8 +2912,10 @@ shootArrow:
     
     ; Check if we JUST ran out of ammo (now at 0)
     cmp ammoCount, 0
-    jne gameInputDone
-    
+    jle ammoZero
+    jmp gameInputDone
+
+ammoZero:
     ; Out of ammo - play scream sound
     call PlayScreamSound
     jmp gameInputDone
